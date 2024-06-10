@@ -1,0 +1,136 @@
+[
+    {
+        "model": "Food",
+        "pk": 1,
+        "fields": {
+            "description": "Tomatoes, grape, raw",
+            "nutrientConversionFactors": [
+                {
+                    "type": ".ProteinConversionFactor",
+                    "value": 6.25
+                },
+                {
+                    "type": ".CalorieConversionFactor",
+                    "proteinValue": 2.44,
+                    "fatValue": 8.37,
+                    "carbohydrateValue": 3.57
+                }
+            ],
+            "ndbNumber": 100147,
+            "fdcId": 321360,
+            "foodCategory": {
+                "description": "Vegetables and Vegetable Products"
+            }
+        }
+    },
+    {
+        "model": "Food",
+        "pk": 2,
+        "fields": {
+            "description": "Beans, snap, green, canned, regular pack, drained solids",
+            "nutrientConversionFactors": [
+                {
+                    "type": ".CalorieConversionFactor",
+                    "proteinValue": 2.44,
+                    "fatValue": 8.37,
+                    "carbohydrateValue": 3.57
+                },
+                {
+                    "type": ".ProteinConversionFactor",
+                    "value": 6.25
+                }
+            ],
+            "ndbNumber": 11056,
+            "fdcId": 321611,
+            "foodCategory": {
+                "description": "Vegetables and Vegetable Products"
+            }
+        }
+    },
+    {
+        "model": "Nutrients",
+        "pk": 1,
+        "fields": {
+            "Water": 92.5,
+            "Vitamin C, total ascorbic acid": 27.2,
+            "Ash": 0.56,
+            "Total lipid (fat)": 0.63,
+            "Nitrogen": 0.13,
+            "Betaine": 0.0,
+            "Choline, free": 8.0,
+            "Choline, from glycerophosphocholine": 0.0,
+            "Choline, from phosphotidyl choline": 1.2,
+            "Choline, from phosphocholine": 0.6,
+            "Choline, from sphingomyelin": 0.0,
+            "Choline, total": 9.8,
+            "Calcium, Ca": 11.0,
+            "Copper, Cu": 0.058,
+            "Iron, Fe": 0.33,
+            "Magnesium, Mg": 11.9,
+            "Manganese, Mn": 0.121,
+            "Phosphorus, P": 28.0,
+            "Potassium, K": 260,
+            "Sodium, Na": 6.0,
+            "Zinc, Zn": 0.2,
+            "Fiber, total dietary": 2.1,
+            "Carotene, alpha": 0.0,
+            "Cryptoxanthin, alpha": 0.0,
+            "trans-beta-Carotene": 393,
+            "Cryptoxanthin, beta": 0.0,
+            "cis-beta-Carotene": 49.0,
+            "cis-Lutein/Zeaxanthin": 12.0,
+            "cis-Lycopene": 554,
+            "Lutein": 95.0,
+            "Lycopene": 4100.0,
+            "Zeaxanthin": 9.0,
+            "Vitamin E (alpha-tocopherol)": 0.98,
+            "Tocotrienol, alpha": 0.0,
+            "Tocopherol, beta": 0.02,
+            "Tocotrienol, beta": 0.0,
+            "Tocopherol, delta": 0.12,
+            "Tocotrienol, delta": 0.0,
+            "Tocopherol, gamma": 0.7,
+            "Tocotrienol, gamma": 0.0,
+            "Vitamin K (Dihydrophylloquinone)": 0.0,
+            "Vitamin K (Menaquinone-4)": 0.0,
+            "Vitamin K (phylloquinone)": 4.2,
+            "Riboflavin": 0.065,
+            "Thiamin": 0.075,
+            "Vitamin B-6": 0.06,
+            "Folate, total": 10.0,
+            "Niacin": 0.805,
+            "Protein": 0.83,
+            "Carbohydrate, by difference": 5.51,
+            "Energy": 113
+        }
+    },
+    {
+        "model": "Nutrients",
+        "pk": 2,
+        "fields": {
+            "Galactose": 0.0,
+            "Lactose": 0.0,
+            "Water": 93.6,
+            "Zinc, Zn": 0.19,
+            "Calcium, Ca": 36.0,
+            "Total lipid (fat)": 0.39,
+            "Carbohydrate, by difference": 4.11,
+            "Energy": 86.0,
+            "Sucrose": 0.0,
+            "Glucose": 0.65,
+            "Phosphorus, P": 23.0,
+            "Sodium, Na": 282,
+            "Copper, Cu": 0.041,
+            "Manganese, Mn": 0.176,
+            "Iron, Fe": 0.78,
+            "Fructose": 0.64,
+            "Protein": 1.04,
+            "Ash": 0.89,
+            "Magnesium, Mg": 12.7,
+            "Maltose": 0.0,
+            "Potassium, K": 97.0,
+            "Nitrogen": 0.17,
+            "Sugars, Total": 1.29
+        }
+    }
+]
