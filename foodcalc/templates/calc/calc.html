@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}
+  главная страница Калькулятора
+{% endblock %}
+{% block content %}
+    <h1> Здесь будет калькулятор! </h1>
+    <article class="mb-5">
+      <p>Составим рацион:</p>
+      <input type="text" list="citylist" Placeholder="Search City.." class="form-control" style="width:300px;">
+      <datalist id="citylist">
+   {% for results in showcity %}
+          <option value="{{ results.description}}">
+   {% endfor %}
+      </datalist>
+    </article>
+  
+{% endblock %}
