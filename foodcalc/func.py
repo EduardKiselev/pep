@@ -1,39 +1,23 @@
 import json
-good_key = set(['description', 'foodNutrients', 'nutrientConversionFactors', 'ndbNumber', 'fdcId', 'foodCategory'])
-nutrients_set=set()
+# good_key = set(['description', 'foodNutrients', 'nutrientConversionFactors', 'ndbNumber', 'fdcId', 'foodCategory'])
 with open('foundationDownload.json') as file:
     data = json.load(file)
     data = data['FoundationFoods']
-    # for elem in data:
-     #   print(elem['description'])
-    
-    # for i in range(1):
-    #     for key, value in data[i].items():
-    #         if key in good_key and key != 'foodNutrients':
-    #             print(key, ':', value)
-    #         if key == 'foodNutrients':
-    #             print('Nutrients Len:', len(data[i]['foodNutrients']))
-            
-    #     print('=================================')
 
-    for i in range(1): 
-        for j in range(len(data[i]['foodNutrients'])):
-            nutrients_set.add(data[i]['foodNutrients'][j]['nutrient']['name'])
-    
- #   print(nutrients_set)
- #   print(len(nutrients_set))
-food=[]
+food = []
 nutrients = []
-for i in range(1, 3):
+nutrients_measure = []
+nutrients_added = set()
+pk_measure = 1
+for i in range(1, len(data)):
     current = {}
     current['model'] = 'Food'
     current['pk'] = i
     current['fields'] = {
         "description": data[i]['description'],
-        "nutrientConversionFactors": data[i]['nutrientConversionFactors'],
         "ndbNumber": data[i]['ndbNumber'],
         "fdcId": data[i]['fdcId'],
-        "foodCategory": data[i]['foodCategory'],
+        "foodCategory": data[i]['foodCategory']["description"],
     }
     food.append(current)
     current_nutr = {}
@@ -45,13 +29,19 @@ for i in range(1, 3):
             name = data[i]['foodNutrients'][j]['nutrient']['name']
             value = data[i]['foodNutrients'][j]['amount']
             current_nutr['fields'][name] = value
+            if name not in nutrients_added:
+                nutrients_added.add(name)
+                nutr_measure = {}
+                nutr_measure['model'] = 'NutrientsMeasure'
+                nutr_measure['pk'] = pk_measure
+                pk_measure += 1
+                nutr_measure['fields'] = {}
+                nutr_measure['fields']['nutr_name'] = name
+                nutr_measure['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName']
+                nutrients_measure.append(nutr_measure)
     nutrients.append(current_nutr)
 
-for elem in food:
-    for key, value in elem.items():
-        print(key, ':', value)
-
-output = food + nutrients
+output = food + nutrients + nutrients_measure
 
 with open('output.json', 'w') as file:
     json.dump(output, file)
