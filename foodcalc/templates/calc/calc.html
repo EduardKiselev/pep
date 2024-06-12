@@ -4,14 +4,16 @@
 {% endblock %}
 {% block content %}
     <h1> Здесь будет калькулятор! </h1>
-    <article class="mb-5">
-      <p>Составим рацион:</p>
-      <input type="text" list="citylist" Placeholder="Search City.." class="form-control" style="width:300px;">
-      <datalist id="citylist">
+    <form>
+      <label for="food"> Добавим в рацион: </label> 
+      <input type="text" list="foodlist" name="food_name" Placeholder="Введите название продукта" class="form-control" style="width:300px;">
+      <datalist id="foodlist">
    {% for results in showcity %}
           <option value="{{ results.description}}">
    {% endfor %}
       </datalist>
-    </article>
-  
+      <button type="submit"> "Добавить"</button>
+    </form>
+
+
 {% endblock %}
