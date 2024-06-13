@@ -55,8 +55,8 @@ for i in range(1, len(data)):
             current_nutr['pk'] = curr_nurt_quantity_pk
             curr_nurt_quantity_pk += 1
             current_nutr['fields'] = {}
-            current_nutr['fields']['food_id'] = i
-            current_nutr['fields']['nutrient_id'] = nutrients_dict[name]
+            current_nutr['fields']['food'] = i
+            current_nutr['fields']['nutrient'] = nutrients_dict[name]
             if data[i]['foodNutrients'][j].get('amount') is not None:
                 current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['amount']
             else:

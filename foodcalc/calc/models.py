@@ -25,9 +25,9 @@ class NutrientsName(models.Model):
 
 
 class NutrientsQuantity(models.Model):
-    food_id = models.ForeignKey(Food, verbose_name="Продукт", on_delete=models.CASCADE, related_name='food')
-    nutrient_id = models.ForeignKey(NutrientsName, verbose_name='Имя нутриента', on_delete=models.CASCADE, related_name='quan')
+    food = models.ForeignKey(Food, verbose_name="Продукт", on_delete=models.CASCADE, related_name='quan')
+    nutrient = models.ForeignKey(NutrientsName, verbose_name='Имя нутриента', on_delete=models.CASCADE, related_name='quan')
     amount = models.FloatField(verbose_name='Количество')
 
     def __str__(self):
-        return str(self.food_id)
+        return '&'+str(self.food)+' '+str(self.nutrient)+'&'

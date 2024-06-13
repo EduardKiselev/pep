@@ -3,9 +3,8 @@
   главная страница Калькулятора
 {% endblock %}
 {% block content %}
-    <h1> Здесь будет калькулятор! </h1>
     <form>
-      <label for="food"> Добавим в рацион: </label>
+      <label> Добавить в список: </label>
       <input type="text" list="foodlist" name="food" Placeholder="Введите название продукта" class="form-control" style="width:300px;">
       <datalist id="foodlist">
    {% for results in showfood %}
@@ -14,17 +13,66 @@
       </datalist>
       <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Добавить</a></button>
     </form>
+    
+    <form>
+      <label> Убрать из списка: </label>
+      <input type="text" list="foodremovelist" name="remove_food" Placeholder="Введите название продукта" class="form-control" style="width:300px;">
+      <datalist id="foodremovelist">
+          {% for results in delete_list %}
+                 <option value="{{ results.description}}">
+          {% endfor %}
+      </datalist>
+      
+      <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Убрать</a></button>
+      </form>
 
 
-
-    <a href="{% url 'calc:index' %}" ><button>reset_form</button></a>
-    <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-      href="{% url 'calc:index' %}">Написать пост</a></button>
-
-     {% if request.GET %}
-    <p><h2> {{request.GET.food}} добавлен!</h2></p>
-     {% endif %}
+     {% if request.GET.food %} <p><h2> {{request.GET.food}} добавлен!</h2></p> {% endif %}
+     {% if request.GET.remove_food %} <p><h2> {{request.GET.remove_food}} убран!</h2></p> {% endif %} 
     {% for food in chosen %}
     <p> {{food}} </p>
     {% endfor %}
+
+    {% if delete_list %}
+      <table>
+        <caption>
+          <h2> Калькулятор </h2>
+        </caption>
+        <thead>
+          <tr>
+          {% for column in columns %}
+            {% if forloop.first%}
+             <th> Food </th>
+            {% endif %}
+            <th> {{column}} </th>
+          {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for row in items %}
+          <tr>
+          {% for column in columns %}
+            {% if forloop.first%}
+
+            <td>{{row.food_id}}</td>
+            {% else %}
+            <td>
+              {% for elem in row %}
+              {% if elem.id == column.id %}  
+              {{ elem.amount }}
+              {% endif %}
+            </td>
+              {% comment %} {{column.id}}
+              {{column.name}}
+              {{column.unit}} {% endcomment %}
+             {% comment %} <td>{{ column }}</td> {% endcomment %}
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+          </tr>
+       {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
 {% endblock %}

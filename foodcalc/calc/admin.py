@@ -15,6 +15,7 @@ class NutrientsNameAdmin(admin.ModelAdmin):
     list_display = ('name', 'unit_name', 'is_published')
     list_editable = ('is_published', )
     list_filter = ('is_published', )
+    search_fields = ('name',)
 
 @admin.register(NutrientsQuantity)
 class NutrientsQuantity(admin.ModelAdmin):
