@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load index %}
 {% block title %}
   главная страница Калькулятора
 {% endblock %}
@@ -40,37 +41,31 @@
         </caption>
         <thead>
           <tr>
-          {% for column in columns %}
-            {% if forloop.first%}
-             <th> Food </th>
-            {% endif %}
-            <th> {{column}} </th>
-          {% endfor %}
+            <th> Food </th>
+            {% for column in columns %}
+              <th> {{column}} </th>
+            {% endfor %}
           </tr>
         </thead>
         <tbody>
         {% for row in items %}
-          <tr>
-          {% for column in columns %}
-            {% if forloop.first%}
+        <tr>
+          <td>
+            {{items_name|index:forloop.counter0}}
+          </td>
+            {% for column in columns%}
+              <td>
+              {% for elem in row%}
+                {% if elem.nutrient == column %}
+                  {{elem.amount}}    
+                {% endif %}
+              {% endfor %} 
+              </td>
 
-            <td>{{row.food_id}}</td>
-            {% else %}
-            <td>
-              {% for elem in row %}
-              {% if elem.id == column.id %}  
-              {{ elem.amount }}
-              {% endif %}
-            </td>
-              {% comment %} {{column.id}}
-              {{column.name}}
-              {{column.unit}} {% endcomment %}
-             {% comment %} <td>{{ column }}</td> {% endcomment %}
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-          </tr>
-       {% endfor %}
+            {% endfor %}
+        </tr>   
+        {% endfor %}
+
         </tbody>
       </table>
     {% endif %}

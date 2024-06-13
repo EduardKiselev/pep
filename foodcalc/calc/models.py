@@ -30,4 +30,4 @@ class NutrientsQuantity(models.Model):
     amount = models.FloatField(verbose_name='Количество')
 
     def __str__(self):
-        return '&'+str(self.food)+' '+str(self.nutrient)+'&'
+        return '&'+str(self.food)+': '+str(self.nutrient)+'='+str(self.amount)+'&'
