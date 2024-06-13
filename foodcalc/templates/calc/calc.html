@@ -5,15 +5,26 @@
 {% block content %}
     <h1> Здесь будет калькулятор! </h1>
     <form>
-      <label for="food"> Добавим в рацион: </label> 
-      <input type="text" list="foodlist" name="food_name" Placeholder="Введите название продукта" class="form-control" style="width:300px;">
+      <label for="food"> Добавим в рацион: </label>
+      <input type="text" list="foodlist" name="food" Placeholder="Введите название продукта" class="form-control" style="width:300px;">
       <datalist id="foodlist">
-   {% for results in showcity %}
+   {% for results in showfood %}
           <option value="{{ results.description}}">
    {% endfor %}
       </datalist>
-      <button type="submit"> "Добавить"</button>
+      <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Добавить</a></button>
     </form>
 
 
+
+    <a href="{% url 'calc:index' %}" ><button>reset_form</button></a>
+    <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
+      href="{% url 'calc:index' %}">Написать пост</a></button>
+
+     {% if request.GET %}
+    <p><h2> {{request.GET.food}} добавлен!</h2></p>
+     {% endif %}
+    {% for food in chosen %}
+    <p> {{food}} </p>
+    {% endfor %}
 {% endblock %}

@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Food(models.Model):
-    description = models.CharField(max_length=30)
+    description = models.CharField(max_length=150)
     ndbNumber = models.IntegerField()
     fdcId = models.IntegerField()
     foodCategory = models.CharField(max_length=50)
@@ -14,7 +14,7 @@ class Food(models.Model):
 
 
 class NutrientsName(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=50)
     unit_name = models.CharField(max_length=10)
     is_published = models.BooleanField(
         default=True, verbose_name='Опубликовано',

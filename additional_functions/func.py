@@ -15,6 +15,8 @@ nutrient_id = 1
 nutrients_dict = {}
 nutr_name_list = []
 curr_nurt_quantity_pk = 1
+max_food_len=0
+max_foodcat_len=0
 for i in range(1, len(data)):
     current = {}
     current['model'] = 'calc.food'
@@ -25,6 +27,8 @@ for i in range(1, len(data)):
         "fdcId": data[i]['fdcId'],
         "foodCategory": data[i]['foodCategory']["description"],
     }
+    max_food_len = max(max_food_len, len(data[i]['description']))
+    max_foodcat_len = max(max_foodcat_len, len(data[i]['foodCategory']["description"]))
     food.append(current)
 
     for j in range(len(data[i]['foodNutrients'])):  # это список нутриентов i-ой еды
@@ -63,7 +67,10 @@ for i in range(1, len(data)):
 # nutrients_count = {}
 # for nutrient in nutrients_added:
 #     nutrients_count[nutrient] = 0
-print(len(nutrients_added))
+print('nutrients_added:', len(nutrients_added))
+print('max_food_len:', max_food_len)
+print('max_foodcat_len:', max_foodcat_len)
+
 output = nutr_name_list + food + nutrients
 
 with open('converted_load_data.json', 'w') as file:
