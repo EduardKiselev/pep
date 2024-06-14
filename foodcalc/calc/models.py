@@ -10,7 +10,7 @@ class Food(models.Model):
         help_text='Снимите галочку, чтобы не выводить продукт.')
 
     def __str__(self):
-        return self.description
+        return 'CLASS '+self.description
 
 
 class NutrientsName(models.Model):
@@ -21,7 +21,7 @@ class NutrientsName(models.Model):
         help_text='Снимите галочку, чтобы не выводить нутриент.')
 
     def __str__(self):
-        return self.name
+        return 'CLASS '+self.name
 
 
 class NutrientsQuantity(models.Model):
@@ -30,4 +30,4 @@ class NutrientsQuantity(models.Model):
     amount = models.FloatField(verbose_name='Количество')
 
     def __str__(self):
-        return '&'+str(self.food)+': '+str(self.nutrient)+'='+str(self.amount)+'&'
+        return '&CLASS '+str(self.food)+': '+str(self.nutrient)+'='+str(self.amount)+'&'

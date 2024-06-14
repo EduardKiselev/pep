@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% load index %}
+{% load multiply%}
+{% load get_type%}
+
 {% block title %}
   главная страница Калькулятора
 {% endblock %}
@@ -30,11 +33,18 @@
 
      {% if request.GET.food %} <p><h2> {{request.GET.food}} добавлен!</h2></p> {% endif %}
      {% if request.GET.remove_food %} <p><h2> {{request.GET.remove_food}} убран!</h2></p> {% endif %} 
+
     {% for food in chosen %}
-    <p> {{food}} </p>
+    <p> {{food}} 
+    <form method='POST'>
+      {% csrf_token %} 
+      <label for='quan_{{food}}'> </label>
+      <input type="number" Placeholder='{{food}}' name="mass_{{food}}">
+    </form>
+    </p>
     {% endfor %}
 
-    {% if delete_list %}
+    {% if items_name %}
       <table>
         <caption>
           <h2> Калькулятор </h2>
@@ -43,26 +53,38 @@
           <tr>
             <th> Food </th>
             {% for column in columns %}
-              <th> {{column}} </th>
+              <th> {{column.name}} </th>
             {% endfor %}
           </tr>
         </thead>
         <tbody>
         {% for row in items %}
         <tr>
+          {% with food_name_class=items_name|index:forloop.counter0 %}
+          {% with food_name=food_name_class.description%}
           <td>
-            {{items_name|index:forloop.counter0}}
+            {{food_name}}
           </td>
             {% for column in columns%}
               <td>
               {% for elem in row%}
                 {% if elem.nutrient == column %}
-                  {{elem.amount}}    
+                  {% comment %} {{ elem.nutrient }} {% endcomment %}
+                  {{elem.amount}}
+                  {% comment %} {{ mass_dict.elem|get_type }} {% endcomment %}
+                    {{food_name_class|get_type}}
+                    
+                  {{mass_dict.food_name_class}}
+
+                  {{mass_dict.1}}
+                  {% comment %} {% widthratio elem.amount 1 mass_dict.1 %} 
+                  {% multiply elem.amount mass_dict.1 %}   {% endcomment %}
                 {% endif %}
               {% endfor %} 
               </td>
-
             {% endfor %}
+          {% endwith %}
+          {% endwith %}
         </tr>   
         {% endfor %}
 
