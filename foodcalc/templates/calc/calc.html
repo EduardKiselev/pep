@@ -2,6 +2,7 @@
 {% load index %}
 {% load multiply%}
 {% load get_type%}
+{% load dict_key%}
 
 {% block title %}
   главная страница Калькулятора
@@ -32,17 +33,7 @@
 
 
      {% if request.GET.food %} <p><h2> {{request.GET.food}} добавлен!</h2></p> {% endif %}
-     {% if request.GET.remove_food %} <p><h2> {{request.GET.remove_food}} убран!</h2></p> {% endif %} 
-
-    {% for food in chosen %}
-    <p> {{food}} 
-    <form method='POST'>
-      {% csrf_token %} 
-      <label for='quan_{{food}}'> </label>
-      <input type="number" Placeholder='{{food}}' name="mass_{{food}}">
-    </form>
-    </p>
-    {% endfor %}
+     {% if request.GET.remove_food %} <p><h2> {{request.GET.remove_food}} убран!</h2></p> {% endif %}
 
     {% if items_name %}
       <table>
@@ -52,6 +43,7 @@
         <thead>
           <tr>
             <th> Food </th>
+            <th> Mass </th>
             {% for column in columns %}
               <th> {{column.name}} </th>
             {% endfor %}
@@ -60,25 +52,23 @@
         <tbody>
         {% for row in items %}
         <tr>
-          {% with food_name_class=items_name|index:forloop.counter0 %}
-          {% with food_name=food_name_class.description%}
+          {% with food_instance=items_name|index:forloop.counter0 %}
+          {% with food_id=food_instance.id%}
           <td>
-            {{food_name}}
+            {{food_instance.description}}
           </td>
-            {% for column in columns%}
+          <td>
+            <form method='POST'>
+              {% csrf_token %} 
+              <label for='quan_{{food}}'> </label>
+              <input type="number" Placeholder='{{mass_dict|dict_key:food_id}}' name="mass_{{food_id}}" style="width: 70px;">
+            </form>
+          </td>
+            {% for column in columns %}
               <td>
               {% for elem in row%}
                 {% if elem.nutrient == column %}
-                  {% comment %} {{ elem.nutrient }} {% endcomment %}
-                  {{elem.amount}}
-                  {% comment %} {{ mass_dict.elem|get_type }} {% endcomment %}
-                    {{food_name_class|get_type}}
-                    
-                  {{mass_dict.food_name_class}}
-
-                  {{mass_dict.1}}
-                  {% comment %} {% widthratio elem.amount 1 mass_dict.1 %} 
-                  {% multiply elem.amount mass_dict.1 %}   {% endcomment %}
+                  {% multiply elem.amount mass_dict|dict_key:food_id %}   
                 {% endif %}
               {% endfor %} 
               </td>
@@ -87,6 +77,18 @@
           {% endwith %}
         </tr>   
         {% endfor %}
+        <td>
+        </td>
+        <th>
+          TOTALS
+        </th>
+          {% for column in columns%}
+            <th>
+              {% if totals|dict_key:column.name%}
+                {{totals|dict_key:column.name}}
+              {% endif %}
+            </th>
+          {% endfor %}
 
         </tbody>
       </table>

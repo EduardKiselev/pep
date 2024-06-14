@@ -3,8 +3,8 @@
   <nav class="navbar navbar-light" style="background-color: lightskyblue">
     <div class="container">
       <a class="navbar-brand" href="{% url 'calc:index' %}">
-        <img src="{% static 'img/logo.png' %}" width="187" height="30" class="d-inline-block align-top" alt="">
-        PetFoodCalc
+        <img src="{% static 'img/logo.png' %}" width="100" height="46" class="d-inline-block align-top" alt="">
+        <p>PetFoodCalc</p>
       </a>
       {% with request.resolver_match.view_name as view_name %}
         <ul class="nav  nav-pills">
