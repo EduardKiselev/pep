@@ -5,7 +5,7 @@
 {% load dict_key%}
 
 {% block title %}
-  главная страница Калькулятора
+  Калькулятор
 {% endblock %}
 {% block content %}
     <form>
@@ -43,7 +43,7 @@
         <thead>
           <tr>
             <th> Food </th>
-            <th> Mass </th>
+            <th> Mass, g </th>
             {% for column in columns %}
               <th> {{column.name}} </th>
             {% endfor %}

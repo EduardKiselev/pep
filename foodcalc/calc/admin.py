@@ -1,10 +1,11 @@
 from django.contrib import admin
-from calc.models import Food,NutrientsName,NutrientsQuantity
+from calc.models import Food, NutrientsName, NutrientsQuantity
 
 
 @admin.register(Food)
 class FoodAdmin(admin.ModelAdmin):
-    list_display = ('description', 'ndbNumber', 'fdcId', 'foodCategory', 'is_published')
+    list_display = ('description', 'ndbNumber',
+                    'fdcId', 'foodCategory', 'is_published')
     list_editable = ('is_published', )
     search_fields = ('description',)
     list_filter = ('is_published', 'foodCategory')
@@ -16,6 +17,7 @@ class NutrientsNameAdmin(admin.ModelAdmin):
     list_editable = ('is_published', )
     list_filter = ('is_published', )
     search_fields = ('name',)
+
 
 @admin.register(NutrientsQuantity)
 class NutrientsQuantity(admin.ModelAdmin):
