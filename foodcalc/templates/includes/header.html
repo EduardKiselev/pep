@@ -15,6 +15,9 @@
             <a class="nav-link {% if view_name == 'admin' %} text-white {% endif %}" href="/admin">
               Админка
             </a>
+            <a class="nav-link {% if view_name == 'admin' %} text-white {% endif %}" href="{% url 'calc:calc' %}">
+              Калькулятор
+            </a>            
           </li>
           {% comment %} {% if user.is_authenticated %}
             <div class="btn-group" role="group" aria-label="Basic outlined example">

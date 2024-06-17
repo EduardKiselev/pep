@@ -5,9 +5,10 @@
 {% load dict_key%}
 
 {% block title %}
-  главная страница Калькулятора
+  Калькулятор
 {% endblock %}
 {% block content %}
+  <h2> Калькулятор </h2>
     <form>
       <label> Добавить в список: </label>
       <input type="text" list="foodlist" name="food" Placeholder="Введите название продукта" class="form-control" style="width:300px;">
@@ -43,7 +44,7 @@
         <thead>
           <tr>
             <th> Food </th>
-            <th> Mass </th>
+            <th> Mass, g </th>
             {% for column in columns %}
               <th> {{column.name}} </th>
             {% endfor %}

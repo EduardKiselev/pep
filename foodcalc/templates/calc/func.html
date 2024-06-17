@@ -1,0 +1,42 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+    Целевая функция
+{% endblock %}
+
+{% block content %}
+    <h1>
+    Целевая функция
+    </h1>
+    <form>
+      <label> Добавить в целевую функцию: </label>
+      <input type="text" list="nutr_list" name="nutr_add" Placeholder="Введите название нутриента" class="form-control" style="width:300px;">
+      <datalist id="nutr_list">
+   {% for results in nutrient_list %}
+          <option value="{{ results.name}}">
+   {% endfor %}
+      </datalist>
+      <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Добавить</a></button>
+    </form>
+    
+    <form>
+      <label> Убрать из списка: </label>
+      <input type="text" list="nutrremovelist" name="remove_nutr" Placeholder="Введите название нутриента" class="form-control" style="width:300px;">
+      <datalist id="nutrremovelist">
+          {% for results in delete_list %}
+                 <option value="{{ results.name}}">
+          {% endfor %}
+      </datalist>
+      
+      <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Убрать</a></button>
+      </form> 
+
+      {% if request.GET.food %} <p><h2> {{request.GET.food}} добавлен!</h2></p> {% endif %}
+      {% if request.GET.remove_food %} <p><h2> {{request.GET.remove_food}} убран!</h2></p> {% endif %}
+
+      {% for nutr in delete_list%}
+        <p> {{nutr.name}} {{nutr.id}} </p>
+      {% endfor %}
+
+{% endblock %}
