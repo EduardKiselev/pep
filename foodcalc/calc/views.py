@@ -15,7 +15,15 @@ class MassForm(forms.Form):
     mass = forms.IntegerField()
 
 
-def index(request, chosen_food=[], mass_dict={}):
+class NutrinentForm(forms.Form):
+    nutr_add = forms.CharField(max_length=50)
+
+
+class RemoveNutrinentForm(forms.Form):
+    remove_nutr = forms.CharField(max_length=50)    
+
+
+def calc(request, chosen_food=[], mass_dict={}):
     template = 'calc/calc.html'
 
     if request.GET:
@@ -79,4 +87,39 @@ def index(request, chosen_food=[], mass_dict={}):
             'items_name': items_name,
             'totals': totals
                    }
+    return render(request, template, context)
+
+
+def index(request, chosen_nutrients=[], mass_dict={}):
+
+    if request.GET:
+        if 'nutr_add' in request.GET:
+            form = NutrinentForm(request.GET or None)
+            if form.is_valid():
+                nutr_to_add = form.cleaned_data['nutr_add']
+                nutr_class = get_object_or_404(NutrientsName, name=nutr_to_add)
+                if nutr_class.id not in chosen_nutrients:
+                    chosen_nutrients.append(nutr_class.id)
+                    mass_dict[nutr_class.id] = 1
+        elif 'remove_nutr' in request.GET:
+            remove_nutr = RemoveNutrinentForm(request.GET)
+            if remove_nutr.is_valid():
+                nutr_to_remove = remove_nutr.cleaned_data['remove_nutr']
+                id = get_object_or_404(NutrientsName, name=nutr_to_remove).id
+                index = chosen_nutrients.index(id)
+                chosen_nutrients.pop(index)
+                del mass_dict[id]
+
+    template = 'calc/func.html'
+    nutrient_list = NutrientsName.objects.filter(is_published=True)
+    form = NutrinentForm()
+
+    if chosen_nutrients:
+        delete_list = NutrientsName.objects.filter(id__in=chosen_nutrients)
+        add_context = {'delete_list': delete_list}
+    
+    print('chosen nutrients', chosen_nutrients)
+    context = {'nutrient_list': nutrient_list, 'chosen_nutrients': chosen_nutrients, 'mass_dict': mass_dict}
+    if chosen_nutrients:
+        context |= add_context
     return render(request, template, context)
