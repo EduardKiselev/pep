@@ -5,11 +5,7 @@ from calc.models import Food, NutrientsName, NutrientsQuantity
 @admin.register(Food)
 class FoodAdmin(admin.ModelAdmin):
     list_display = ('description', 'ndbNumber',
-<<<<<<< HEAD
                     'fdcId',  'is_published')
-=======
-                    'fdcId', 'foodCategory', 'is_published')
->>>>>>> 3d50df2bfad1492f3674c35c012d319c2d19f671
     list_editable = ('is_published', )
     search_fields = ('description',)
     list_filter = ('is_published',)

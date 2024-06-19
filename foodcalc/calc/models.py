@@ -5,11 +5,8 @@ class Food(models.Model):
     description = models.CharField(max_length=150)
     ndbNumber = models.IntegerField()
     fdcId = models.IntegerField()
-<<<<<<< HEAD
-#    foodCategory = models.CharField(max_length=50, default=None)
-=======
-    foodCategory = models.CharField(max_length=50)
->>>>>>> 3d50df2bfad1492f3674c35c012d319c2d19f671
+#    foodCategory = models.CharField(max_length=50)
+
     is_published = models.BooleanField(
         default=True,
         verbose_name='Опубликовано',

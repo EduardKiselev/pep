@@ -90,7 +90,9 @@ def calc(request, chosen_food=[], mass_dict={}):
     return render(request, template, context)
 
 
-def index(request, chosen_nutrients=[], mass_dict={}):
+
+
+def food_search(request, chosen_nutrients=[], mass_dict={}):
 
     if request.GET:
         if 'nutr_add' in request.GET:
@@ -110,6 +112,14 @@ def index(request, chosen_nutrients=[], mass_dict={}):
                 chosen_nutrients.pop(index)
                 del mass_dict[id]
 
+    if request.POST:
+        for nutrient_id in chosen_nutrients:
+            print(nutrient_id)
+            if str(nutrient_id) in request.POST.keys():
+                mass = int(request.POST[str(nutrient_id)])
+                if mass > 0:
+                    mass_dict[nutrient_id] = mass
+
     template = 'calc/func.html'
     nutrient_list = NutrientsName.objects.filter(is_published=True)
     form = NutrinentForm()
@@ -117,8 +127,21 @@ def index(request, chosen_nutrients=[], mass_dict={}):
     if chosen_nutrients:
         delete_list = NutrientsName.objects.filter(id__in=chosen_nutrients)
         add_context = {'delete_list': delete_list}
-    
-    print('chosen nutrients', chosen_nutrients)
+        for nutrient in chosen_nutrients:
+            objects = NutrientsQuantity.objects.filter(nutrient_id=nutrient)
+            totals = {}
+            for object in objects:
+                totals[object.food_id] = totals.get(object.food_id,0) + mass_dict[nutrient] * object.amount
+
+        res = sorted(totals.items(),key=lambda x:x[1],reverse=True)[:10]
+        for elem in res:
+            name = get_object_or_404(Food, id=elem[0]).description
+            val = elem[1]
+            print(name, ':', val)
+
+
+
+    print('chosen nutrients', chosen_nutrients, '\nmass_dict:', mass_dict)
     context = {'nutrient_list': nutrient_list, 'chosen_nutrients': chosen_nutrients, 'mass_dict': mass_dict}
     if chosen_nutrients:
         context |= add_context
