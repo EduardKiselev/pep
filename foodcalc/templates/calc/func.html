@@ -1,5 +1,6 @@
 
 {% extends "base.html" %}
+{% load dict_key%}
 
 {% block title %}
     Целевая функция
@@ -36,12 +37,17 @@
       {% if request.GET.remove_nutr %} <p><h2> {{request.GET.remove_nutr}} убран!</h2></p> {% endif %}
 
       {% for nutr in delete_list%}
-        <p> {{nutr.name}} {{nutr.id}} 
+        <p> {{nutr.name}}
           <form method='POST'>
           {% csrf_token %} 
           <label for='weight_{{nutr}}'> </label>
           <input type="number" Placeholder='{{mass_dict|dict_key:nutr.id}}' name="{{nutr.id}}" style="width: 70px;">
         </form></p>
       {% endfor %}
+      
+      {% for food in rating %}
+      
+        <p> {{food}} {{rating|dict_key:food}}</p>
+      {% endfor%}
 
 {% endblock %}

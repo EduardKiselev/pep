@@ -106,12 +106,13 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
         elif 'remove_nutr' in request.GET:
             remove_nutr = RemoveNutrinentForm(request.GET)
             if remove_nutr.is_valid():
+                print('OKOKOKOK')
                 nutr_to_remove = remove_nutr.cleaned_data['remove_nutr']
                 id = get_object_or_404(NutrientsName, name=nutr_to_remove).id
                 index = chosen_nutrients.index(id)
                 chosen_nutrients.pop(index)
                 del mass_dict[id]
-
+ 
     if request.POST:
         for nutrient_id in chosen_nutrients:
             print(nutrient_id)
@@ -126,22 +127,26 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
 
     if chosen_nutrients:
         delete_list = NutrientsName.objects.filter(id__in=chosen_nutrients)
-        add_context = {'delete_list': delete_list}
         for nutrient in chosen_nutrients:
             objects = NutrientsQuantity.objects.filter(nutrient_id=nutrient)
             totals = {}
             for object in objects:
                 totals[object.food_id] = totals.get(object.food_id,0) + mass_dict[nutrient] * object.amount
 
-        res = sorted(totals.items(),key=lambda x:x[1],reverse=True)[:10]
+        res = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:10]
+        print('FOOD RATING:')
+        rating = {}
         for elem in res:
             name = get_object_or_404(Food, id=elem[0]).description
             val = elem[1]
+            rating[name] = val
             print(name, ':', val)
-
+        add_context = {'delete_list': delete_list, 'rating': rating}
 
 
     print('chosen nutrients', chosen_nutrients, '\nmass_dict:', mass_dict)
+    if chosen_nutrients:
+        print('deletelist', delete_list)
     context = {'nutrient_list': nutrient_list, 'chosen_nutrients': chosen_nutrients, 'mass_dict': mass_dict}
     if chosen_nutrients:
         context |= add_context
