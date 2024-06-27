@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+    <h2>{{food.description}}</h2>
+    {% for nutr in nutrients %}
+       <p> {{nutr.nutrient.name}} : {{nutr.amount}} </p>
+    {% endfor %}
+{% endblock %}

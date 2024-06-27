@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% load dict_key%}
 
@@ -45,9 +44,35 @@
         </form></p>
       {% endfor %}
       
-      {% for food in rating %}
-      
-        <p> {{food}} {{rating|dict_key:food}}</p>
-      {% endfor%}
-
+      <table>
+        <caption>
+          <h2> FoodRating </h2>
+        </caption>
+        <thead>
+          <tr>
+            <th> Food </th>
+            <th> Index </th>
+            {% for nutr in delete_list %}
+              <th> -{{nutr.name}}, {{nutr.unit_name}}-</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for food in rating %}
+        <tr>
+        <th>
+          <a class="btn btn-sm text-muted" href="{% url 'calc:food_detail' food.id %}" role="button">
+         {{food.description}}
+        </th>
+        <th style="text-align: center; vertical-align: middle;">
+         {{rating|dict_key:food}}
+         </th>
+         {% for nutr in delete_list %}
+         
+         <td style="text-align: center; vertical-align: middle;"> {{nutrients|dict_key:nutr.id|dict_key:food.id}} </th>
+         {% endfor %}         
+        </td>
+        {% endfor%}
+        </tbody>
+      </table>
 {% endblock %}

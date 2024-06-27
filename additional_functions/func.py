@@ -100,6 +100,6 @@ for file_info in files:
 
         output = nutr_name_list + food + nutrients
 
-    with open('all_data.json', 'w') as file:
+    with open('small_data.json', 'w') as file:
             json.dump(output, file)
     #    json.dump(nutrients_added, file)

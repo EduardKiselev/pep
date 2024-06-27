@@ -13,8 +13,8 @@ class FoodAdmin(admin.ModelAdmin):
 
 @admin.register(NutrientsName)
 class NutrientsNameAdmin(admin.ModelAdmin):
-    list_display = ('name', 'unit_name', 'is_published')
-    list_editable = ('is_published', )
+    list_display = ('name', 'unit_name', 'is_published', 'order')
+    list_editable = ('is_published', 'order')
     list_filter = ('is_published', )
     search_fields = ('name',)
 

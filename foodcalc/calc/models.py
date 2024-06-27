@@ -1,4 +1,8 @@
 from django.db import models
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 class Food(models.Model):
@@ -22,6 +26,7 @@ class NutrientsName(models.Model):
     is_published = models.BooleanField(
         default=True, verbose_name='Опубликовано',
         help_text='Снимите галочку, чтобы не выводить нутриент.')
+    order = models.IntegerField(default=100)
 
     def __str__(self):
         return 'CLASS ' + self.name
@@ -43,3 +48,10 @@ class NutrientsQuantity(models.Model):
     def __str__(self):
         return '&CLASS ' + str(self.food) +\
             ': ' + str(self.nutrient) + '=' + str(self.amount) + '&'
+
+
+class Animals(models.Model):
+    name = models.CharField(max_length=50)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE,
+                               verbose_name='Хозяин')
+    

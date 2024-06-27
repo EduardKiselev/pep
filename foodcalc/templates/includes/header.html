@@ -12,22 +12,23 @@
             <a class="nav-link {% if view_name == 'pages:about' %} text-white {% endif %}" href="{% url 'pages:about' %}">
               О проекте
             </a>
-            <a class="nav-link {% if view_name == 'admin' %} text-white {% endif %}" href="/admin">
-              Админка
-            </a>
+
             <a class="nav-link {% if view_name == 'admin' %} text-white {% endif %}" href="{% url 'calc:calc' %}">
               Калькулятор
             </a>            
           </li>
-          {% comment %} {% if user.is_authenticated %}
+          {% if user.is_authenticated %}
             <div class="btn-group" role="group" aria-label="Basic outlined example">
               <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-                  href="{% url 'blog:create_post' %}">Написать пост</a></button>
-              <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-                  href="{% url 'blog:profile' user.username %}">{{ user.username }}</a></button>
+                  href="{% url 'calc:index' %}">{{ user.username }}</a></button>
               <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
                   href="{% url 'logout' %}">Выйти</a></button>
+              {% if user.is_staff %}
+              <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
+                href="/admin">Админка</a></button>
+              {% endif %}
             </div>
+
           {% else %}
             <div class="btn-group" role="group" aria-label="Basic outlined example">
               <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
@@ -35,7 +36,7 @@
               <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
                   href="{% url 'registration' %}">Регистрация</a></button>
             </div>
-          {% endif %} {% endcomment %}
+          {% endif %}
         </ul>
       {% endwith %}
     </div>

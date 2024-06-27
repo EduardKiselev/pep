@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
-from calc.models import Food, NutrientsName, NutrientsQuantity
+from calc.models import Food, NutrientsName, NutrientsQuantity, User, Animals
 from django import forms
+from django.views.generic import DetailView
 
 
 class FoodForm(forms.Form):
@@ -20,7 +21,23 @@ class NutrinentForm(forms.Form):
 
 
 class RemoveNutrinentForm(forms.Form):
-    remove_nutr = forms.CharField(max_length=50)    
+    remove_nutr = forms.CharField(max_length=50)
+
+
+
+
+class FoodDetailView(DetailView):
+    model = Food
+    template_name = 'calc/detail.html'
+    pk_url_kwarg = 'food_id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        nutrients = NutrientsQuantity.objects.select_related('nutrient', 'food').filter(
+            food_id=self.kwargs.get(self.pk_url_kwarg)).order_by('nutrient__order')
+        context['nutrients'] = nutrients
+        print(context['nutrients'])
+        return context
 
 
 def calc(request, chosen_food=[], mass_dict={}):
@@ -67,7 +84,7 @@ def calc(request, chosen_food=[], mass_dict={}):
             nutrients += item
             item_name = get_object_or_404(Food, id=elem)
             items_name += [item_name]
-    columns = NutrientsName.objects.filter(is_published=True).order_by('name')
+    columns = NutrientsName.objects.filter(is_published=True).order_by('order')
     for food_id in chosen_food:
         all_nutr = NutrientsQuantity.objects.select_related(
             'nutrient').filter(
@@ -90,8 +107,6 @@ def calc(request, chosen_food=[], mass_dict={}):
     return render(request, template, context)
 
 
-
-
 def food_search(request, chosen_nutrients=[], mass_dict={}):
 
     if request.GET:
@@ -106,7 +121,6 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
         elif 'remove_nutr' in request.GET:
             remove_nutr = RemoveNutrinentForm(request.GET)
             if remove_nutr.is_valid():
-                print('OKOKOKOK')
                 nutr_to_remove = remove_nutr.cleaned_data['remove_nutr']
                 id = get_object_or_404(NutrientsName, name=nutr_to_remove).id
                 index = chosen_nutrients.index(id)
@@ -122,32 +136,42 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
                     mass_dict[nutrient_id] = mass
 
     template = 'calc/func.html'
-    nutrient_list = NutrientsName.objects.filter(is_published=True)
+    nutrient_list = NutrientsName.objects.filter(is_published=True).exclude(id__in=chosen_nutrients)
     form = NutrinentForm()
 
     if chosen_nutrients:
         delete_list = NutrientsName.objects.filter(id__in=chosen_nutrients)
+        totals = {}
+        nutrients = {}
         for nutrient in chosen_nutrients:
+            nutrients[nutrient] = {}
             objects = NutrientsQuantity.objects.filter(nutrient_id=nutrient)
-            totals = {}
             for object in objects:
-                totals[object.food_id] = totals.get(object.food_id,0) + mass_dict[nutrient] * object.amount
+                totals[object.food_id] = round(totals.get(object.food_id,0) + mass_dict[nutrient] * object.amount, 2)
+                nutrients[nutrient][object.food_id] = object.amount
 
         res = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:10]
         print('FOOD RATING:')
         rating = {}
         for elem in res:
-            name = get_object_or_404(Food, id=elem[0]).description
-            val = elem[1]
-            rating[name] = val
-            print(name, ':', val)
-        add_context = {'delete_list': delete_list, 'rating': rating}
-
-
+            name = get_object_or_404(Food, id=elem[0])
+            rating[name] = elem[1]
+            print(name, ':', elem[1])
+        add_context = {'delete_list': delete_list, 'rating': rating, 'nutrients': nutrients}
+    
     print('chosen nutrients', chosen_nutrients, '\nmass_dict:', mass_dict)
+
     if chosen_nutrients:
-        print('deletelist', delete_list)
+        print('deletelist', delete_list, '\nnutrients:', nutrients)
     context = {'nutrient_list': nutrient_list, 'chosen_nutrients': chosen_nutrients, 'mass_dict': mass_dict}
     if chosen_nutrients:
         context |= add_context
+    return render(request, template, context)
+
+
+def profile(request, username):
+    template = 'calc/profile.html'
+    profile = get_object_or_404(User, username=username)
+    animals = Animals.objects.filter(owner=username)
+    context = {'profile': profile, 'animals': animals}
     return render(request, template, context)
