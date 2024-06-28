@@ -62,9 +62,10 @@ class Animal(models.Model):
     name = models.CharField(verbose_name='Имя питомца', max_length=50)
     owner = models.ForeignKey(User, on_delete=models.CASCADE,
                                verbose_name='Хозяин')
-    type = models.ForeignKey(AnimalType, on_delete=models.CASCADE, related_name='type', verbose_name='пол/фертильность')
-    mass = models.FloatField(verbose_name='Вес', help_text='Масса питомца, целое число в кг')
-    age = models.IntegerField(verbose_name='Возраст', help_text='Полное число лет')
-
+    type = models.ForeignKey(AnimalType, on_delete=models.CASCADE, related_name='type', verbose_name='Тип питомца')
+    nursing = models.BooleanField(verbose_name='Является ли питомец кормящей')
+    weight = models.FloatField(verbose_name='Вес', help_text='Масса питомца, в кг')
+    birthday = models.DateField(verbose_name='Дата рождения', help_text='При возрасте более года достаточно указать год')
+    
     def __str__(self):
         return self.name

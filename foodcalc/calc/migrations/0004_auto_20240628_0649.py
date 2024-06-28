@@ -14,9 +14,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='AnimalTypes',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(
+                    auto_created=True,
+                    primary_key=True, serialize=False,
+                    verbose_name='ID')),
                 ('title', models.CharField(blank=True, max_length=50)),
-                ('description', models.TextField(blank=True, verbose_name='Описание')),
+                ('description', models.TextField(blank=True,
+                                                 verbose_name='Описание')),
             ],
         ),
         migrations.AddField(

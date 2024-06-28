@@ -22,8 +22,10 @@
   <h3 class="mb-5 text-center">Питомцы пользователя</h3>
   {% for animal in animals %}
     <article class="mb-5">
-      <p> Кличка питомца: {{animal.name}} </p>
-      <p> Информация о питомце: возраст {{animal.age}} лет, тип {{animal.type}}, вес {{animal.mass}} кг </p>
+      <p><h3> {{animal.name}} </h3></p>
+      <p> Информация о питомце:</p> 
+      <p>дата рождения: {{animal.birthday}}, возраст {{animal.birthday|age}} месяцев</p> 
+      <p>тип {{animal.type}} {%if animal.nursing %}, является кормящей {% endif %}, вес {{animal.weight}} кг </p>
       <a href="{% url 'calc:animal_update' animal.id %}">Редактировать</a>
       <a href="{% url 'calc:animal_delete' animal.id %}">Удалить</a>
     </article>

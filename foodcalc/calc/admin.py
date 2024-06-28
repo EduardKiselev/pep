@@ -34,7 +34,7 @@ class AnimalType(admin.ModelAdmin):
 
 @admin.register(Animal)
 class Animal(admin.ModelAdmin):
-    list_display = ('name', 'owner', 'type', 'mass', 'age')
-    list_editable = ('owner', 'type', 'mass', 'age')
+    list_display = ('name', 'owner', 'type', 'nursing', 'weight', 'birthday')
+    list_editable = ('owner', 'type', 'nursing', 'weight', 'birthday')
 
 admin.site.empty_value_display = 'Не задано'

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load django_bootstrap5 %}
+{% load age %}
 {% block title %}
   {% if '/edit/' in request.path %}
     Редактирование данных о питомце
@@ -29,9 +30,9 @@
           {% else %}
             <article>
             <p>Хозяин: {{animal.owner}} </p>
-            <p>Информация о питомце: {{animal.name}},  {{animal.type}}</p>
-            <p>Масса: {{animal.age}}, кг </p>
-            <p>Возраст: {{animal.name}}, лет </p>
+            <p>Информация о питомце: {{animal.name}},  {{animal.type}} {%if animal.nursing %}, является кормящей {% endif %}</p>
+            <p>Масса: {{animal.weight}}, кг </p>
+            <p>Возраст: {{animal.birthday|age }}, месяцев </p>
             </article>
           {% endif %}
           {% bootstrap_button button_type="submit" content="Подтвердить" %}

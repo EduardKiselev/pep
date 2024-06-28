@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 
+
 class FoodDetailView(DetailView):
     model = Food
     template_name = 'calc/detail.html'
@@ -23,7 +24,7 @@ class FoodDetailView(DetailView):
 
 class AnimalCreateView(LoginRequiredMixin, CreateView):
     model = Animal
-    fields = ['name', 'type', 'mass', 'age']
+    fields = ['name', 'type', 'nursing', 'weight', 'birthday']
     template_name = 'animal/create.html'
 
     def form_valid(self, form):
@@ -37,7 +38,7 @@ class AnimalCreateView(LoginRequiredMixin, CreateView):
 class AnimalUpdateView(LoginRequiredMixin, UpdateView):
     model = Animal
     template_name = 'animal/create.html'
-    fields = ['name', 'type', 'mass', 'age']
+    fields = ['name', 'type', 'nursing', 'weight', 'birthday']
 
     def get_success_url(self):
         return reverse_lazy('calc:profile',
@@ -51,11 +52,6 @@ class AnimalDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         return reverse_lazy('calc:profile',
                             args=(self.request.user,))
-
-
-
-
-
 
 
 def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
@@ -85,9 +81,6 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
                 chosen_pet.append(get_object_or_404(Animal, name=pet_name, owner=request.user))
         elif 'pet_reset' in request.GET:
             chosen_pet = []
-
-
-
 
     if request.POST:
         for food_id in chosen_food:
@@ -125,7 +118,7 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
                 + mass_dict[food_id] * nutr.amount/100, 2
                                               )
 
-    context = {"form": form, "showfood": foodlist, "mass_dict": mass_dict, 'pet_list':pet_list}
+    context = {"form": form, "showfood": foodlist, "mass_dict": mass_dict, 'pet_list': pet_list}
     if chosen_food:
         context |= {
             'delete_list': delete_list,
@@ -160,10 +153,8 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
                 index = chosen_nutrients.index(id)
                 chosen_nutrients.pop(index)
                 del mass_dict[id]
-
     if request.POST:
         for nutrient_id in chosen_nutrients:
-            print(nutrient_id)
             if str(nutrient_id) in request.POST.keys():
                 mass = int(request.POST[str(nutrient_id)])
                 mass_dict[nutrient_id] = mass
@@ -175,38 +166,21 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
     if chosen_nutrients:
         delete_list = NutrientsName.objects.filter(id__in=chosen_nutrients)
         totals = {}
-        nutrients = {}
-
+        nutrients = {} 
         for nutrient in chosen_nutrients:
             nutrients[nutrient] = {}
-        objects = NutrientsQuantity.objects.select_related('food').filter(nutrient_id__in=chosen_nutrients)
-        for object in objects:
-            totals[object.food] = round(totals.get(object.food,0) + mass_dict[nutrient] * object.amount, 2)
-            nutrients[nutrient][object.food] = object.amount
-
-
-       # for nutrient in chosen_nutrients:
-       #     nutrients[nutrient] = {}
-       #     objects = NutrientsQuantity.objects.select_related('food').filter(nutrient_id__in=chosen_nutrients)
-       #     for object in objects:
-       #         totals[object.food_id] = round(totals.get(object.food_id,0) + mass_dict[nutrient] * object.amount, 2)
-       #         nutrients[nutrient][object.food_id] = object.amount
+            objects = NutrientsQuantity.objects.select_related(
+                'food').filter(nutrient__id=nutrient)
+            for object in objects:
+                totals[object.food] = round(
+                    totals.get(object.food, 0) +
+                    mass_dict[nutrient] * object.amount, 2)
+                nutrients[nutrient][object.food] = object.amount
         all_food = sorted(totals.items(), key=lambda x: x[1], reverse=True)
-        for nutr in nutrients:
-            print('~~~~~~~~~~~', nutrients[nutr])
-        paginator = Paginator(all_food,10)
+        paginator = Paginator(all_food, 15)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-
-        # print('FOOD RATING:')
-        # rating = {}
-        # for elem in res:
-        #     name = get_object_or_404(Food, id=elem[0])
-        #     rating[name] = elem[1]
-        #     print(name, ':', elem[1])
         add_context = {'delete_list': delete_list, 'page_obj': page_obj, 'nutrients': nutrients}
-
-    print('chosen nutrients', chosen_nutrients, '\nmass_dict:', mass_dict)
 
     context = {'nutrient_list': nutrient_list, 'chosen_nutrients': chosen_nutrients, 'mass_dict': mass_dict}
     if chosen_nutrients:
@@ -231,7 +205,6 @@ def profile(request, username):
 def profile_update(request):
     template = 'animal/user.html'
     instance = get_object_or_404(User, username=request.user)
-    print('~~~~~~~~~~~~!!!!!!!~~~~~~~',instance)
     form = ProfileForm(request.POST or None, instance=instance)
     context = {'form': form}
     if form.is_valid():

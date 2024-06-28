@@ -70,10 +70,14 @@
          {% for nutr in delete_list %}
          
          <td style="text-align: center; vertical-align: middle;"> {{nutrients|dict_key:nutr.id|dict_key:food}} </th> 
-         {% endfor %}         
+         {% endfor %}     
+             
         </td>
         {% endfor%}
         </tbody>
+        
       </table>
+      {% include "includes/paginator.html" %}
+      
       {% endif %}
 {% endblock %}
