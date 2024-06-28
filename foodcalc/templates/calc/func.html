@@ -6,9 +6,9 @@
 {% endblock %}
 
 {% block content %}
-    <h1>
+    <h2>
     Целевая функция
-    </h1>
+    </h2>
     <form>
       <label> Добавить в целевую функцию: </label>
       <input type="text" list="nutr_list" name="nutr_add" Placeholder="Введите название нутриента" class="form-control" style="width:300px;">
@@ -21,7 +21,7 @@
     </form>
     
     <form>
-      <label> Убрать из списка: </label>
+      <label> Убрать из целевой функции: </label>
       <input type="text" list="nutrremovelist" name="remove_nutr" Placeholder="Введите название нутриента" class="form-control" style="width:300px;">
       <datalist id="nutrremovelist">
           {% for results in delete_list %}
@@ -43,7 +43,7 @@
           <input type="number" Placeholder='{{mass_dict|dict_key:nutr.id}}' name="{{nutr.id}}" style="width: 70px;">
         </form></p>
       {% endfor %}
-      
+      {% if delete_list %}
       <table>
         <caption>
           <h2> FoodRating </h2>
@@ -75,4 +75,5 @@
         {% endfor%}
         </tbody>
       </table>
+      {% endif %}
 {% endblock %}

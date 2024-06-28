@@ -8,10 +8,12 @@
   Калькулятор
 {% endblock %}
 {% block content %}
-  <h2> Калькулятор </h2>
+<div class='row'>
+  <div class='col-md-6'>
+    <h2> Калькулятор </h2>
     <form>
-      <label> Добавить в список: </label>
-      <input type="text" list="foodlist" name="food" Placeholder="Введите название продукта" class="form-control" style="width:300px;">
+      <label> Добавить в калькулятор: </label>
+      <input type="text" list="foodlist" name="food" Placeholder="Введите название продукта" class="form-control" style="width:250px;">
       <datalist id="foodlist">
    {% for results in showfood %}
           <option value="{{ results.description}}">
@@ -21,8 +23,8 @@
     </form>
     
     <form>
-      <label> Убрать из списка: </label>
-      <input type="text" list="foodremovelist" name="remove_food" Placeholder="Введите название продукта" class="form-control" style="width:300px;">
+      <label> Убрать из калькулятора: </label>
+      <input type="text" list="foodremovelist" name="remove_food" Placeholder="Введите название продукта" class="form-control" style="width:250px;">
       <datalist id="foodremovelist">
           {% for results in delete_list %}
                  <option value="{{ results.description}}">
@@ -31,7 +33,35 @@
       
       <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Убрать</a></button>
       </form>
+  </div>
+  <div class='col-md-6'>
+    {% if not chosen_pet %}
+    <form>
+      <label> Выбрать питомца: </label>
+      <input type="text" list="pet" name="chose_pet" Placeholder="выберите питомца" class="form-control" style="width:200px;">
+      <datalist id="pet">
+          {% for pet in pet_list %}
+                 <option value="{{pet.name}}">
+          {% endfor %}
+      </datalist>
+      <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Выбрать</a></button>
+    </form>
+    {% else %}
+  <h3> Вы выбрали питомца: </h3>
+    <p>Кличка: {{chosen_pet.name}} </p>
+    <p>Пол/фертильность: {{chosen_pet.type}} </p>
+    <p>Возраст: {{chosen_pet.age}} </p>
+    <p>Вес: {{chosen_pet.mass}} </p>
 
+    <a class="btn btn-sm text-muted" href="{% url 'calc:animal_update' chosen_pet.id %}">Редактировать данные о питомце</a>
+     <form>
+      <button type="submit" name='pet_reset' class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Изменить питомца</a></button>
+     </form>
+
+
+    {% endif %}
+  </div>
+</div>
 
      {% if request.GET.food %} <p><h2> {{request.GET.food}} добавлен!</h2></p> {% endif %}
      {% if request.GET.remove_food %} <p><h2> {{request.GET.remove_food}} убран!</h2></p> {% endif %}
