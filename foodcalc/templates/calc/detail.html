@@ -4,6 +4,6 @@
 {% block content %}
     <h2>{{food.description}}</h2>
     {% for nutr in nutrients %}
-       <p> {{nutr.nutrient.name}} : {{nutr.amount}} </p>
+       <p> {{nutr.nutrient.name}} : {{nutr.amount}} {{nutr.nutrient.unit_name}}</p>
     {% endfor %}
 {% endblock %}

@@ -1,9 +1,55 @@
 import json
 
-
-# with open('FoodData_Central_sr_legacy_food_json_2021-10-28.json') as file:
-#     data = json.load(file)
-#     data = data['SRLegacyFoods']
+good_nutrients = ([
+    'Water',
+    'Energy',
+    'Protein',
+    'Arginine',
+    'Histidine',
+    'Isoleucine',
+    'Leucine',
+    'Lysine',
+    'Methionine',
+    'Phenylalanine',
+    'Threonine',
+    'Tryptophan',
+    'Valine',
+    'Taurine', #
+    'Total fat (NLEA)',
+    'Linoleic acid (ω-6)', #
+    'Arachidonic acid (ω-6)', #
+    'Alpha-linolenic acid (ω-3)', #
+    'EPA+DHA(ω-3)', #
+    'Calcium, Ca',
+    'Phosphorus, P',
+    'Potassium, K',
+    'Sodium, Na',
+    'Chloride',  #
+    'Magnesium, Mg',
+    'Copper, Cu',
+    'Iodine, I',
+    'Iron, Fe',
+    'Manganese, Mn',
+    'Selenium, Se',
+    'Zinc, Zn',
+    'Vitamin A, IU',
+    'Vitamin D (D2 + D3)',
+    'Vitamin E (alpha-tocopherol)',
+    'Vitamin B-1', #
+    'Vitamin B-2',#
+    'Vitamin B-5',#
+    'Vitamin B-6',
+    'Vitamin B-12',
+    'Vitamin B-3',#
+    'Vitamin B-9',#
+    'Vitamin B-7',#
+    'Choline, total',
+    'Vitamin K',    #
+])
+nutrients_order = {}
+for i,nutr in enumerate(good_nutrients, 1):
+   nutrients_order[nutr] = i
+good_nutrients = set(good_nutrients)
 
 food = []
 nutrients = []
@@ -34,7 +80,7 @@ for file_info in files:
         data = json.load(file)
         data = data[file_info[1]]
 
-    for i in range(1, len(data)):
+    for i in range(1, 30): #all data - len(data)
         if data[i]['description'] in food_added:
             print('food was added before', num_povtor)
             num_povtor += 1
@@ -70,6 +116,11 @@ for file_info in files:
                         nutr_name['fields'] = {}
                         nutr_name['fields']['name'] = name  # создание БД имен
                         nutr_name['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName']
+                        if name in good_nutrients:
+                            nutr_name['fields']['is_published'] = 1
+                            nutr_name['fields']['order'] = nutrients_order[name]
+                        else:
+                            nutr_name['fields']['is_published'] = 0
                         nutr_name_list.append(nutr_name)
 
                     # for nutrinents_quantity
@@ -98,8 +149,9 @@ for file_info in files:
     #     print('max_foodcat_len:', max_foodcat_len)
             print('\n\n\n')
 
-        output = nutr_name_list + food + nutrients
 
-    with open('small_data.json', 'w') as file:
-            json.dump(output, file)
+output = nutr_name_list + food + nutrients
+
+with open('small_data.json', 'w') as file:
+    json.dump(output, file)
     #    json.dump(nutrients_added, file)

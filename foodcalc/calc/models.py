@@ -66,6 +66,6 @@ class Animal(models.Model):
     nursing = models.BooleanField(verbose_name='Является ли питомец кормящей')
     weight = models.FloatField(verbose_name='Вес', help_text='Масса питомца, в кг')
     birthday = models.DateField(verbose_name='Дата рождения', help_text='При возрасте более года достаточно указать год')
-    
+
     def __str__(self):
         return self.name

@@ -16,7 +16,7 @@ class FoodDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         nutrients = NutrientsQuantity.objects.select_related('nutrient', 'food').filter(
-            food_id=self.kwargs.get(self.pk_url_kwarg), nutrient__is_published=True).order_by('-nutrient__order')
+            food_id=self.kwargs.get(self.pk_url_kwarg), nutrient__is_published=True).order_by('nutrient__order')
         context['nutrients'] = nutrients
         print(context['nutrients'])
         return context
@@ -106,7 +106,7 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
             nutrients += item
             item_name = get_object_or_404(Food, id=elem)
             items_name += [item_name]
-    columns = NutrientsName.objects.filter(is_published=True).order_by('-order')
+    columns = NutrientsName.objects.filter(is_published=True).order_by('order')
 
     for food_id in chosen_food:
         all_nutr = NutrientsQuantity.objects.select_related(
