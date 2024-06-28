@@ -5,7 +5,7 @@ from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
-
+from django.core.paginator import Paginator
 
 class FoodDetailView(DetailView):
     model = Food
@@ -176,25 +176,38 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
         delete_list = NutrientsName.objects.filter(id__in=chosen_nutrients)
         totals = {}
         nutrients = {}
+
         for nutrient in chosen_nutrients:
             nutrients[nutrient] = {}
-            objects = NutrientsQuantity.objects.filter(nutrient_id=nutrient)
-            for object in objects:
-                totals[object.food_id] = round(totals.get(object.food_id,0) + mass_dict[nutrient] * object.amount, 2)
-                nutrients[nutrient][object.food_id] = object.amount
-        res = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:10]
-        print('FOOD RATING:')
-        rating = {}
-        for elem in res:
-            name = get_object_or_404(Food, id=elem[0])
-            rating[name] = elem[1]
-            print(name, ':', elem[1])
-        add_context = {'delete_list': delete_list, 'rating': rating, 'nutrients': nutrients}
+        objects = NutrientsQuantity.objects.select_related('food').filter(nutrient_id__in=chosen_nutrients)
+        for object in objects:
+            totals[object.food] = round(totals.get(object.food,0) + mass_dict[nutrient] * object.amount, 2)
+            nutrients[nutrient][object.food] = object.amount
+
+
+       # for nutrient in chosen_nutrients:
+       #     nutrients[nutrient] = {}
+       #     objects = NutrientsQuantity.objects.select_related('food').filter(nutrient_id__in=chosen_nutrients)
+       #     for object in objects:
+       #         totals[object.food_id] = round(totals.get(object.food_id,0) + mass_dict[nutrient] * object.amount, 2)
+       #         nutrients[nutrient][object.food_id] = object.amount
+        all_food = sorted(totals.items(), key=lambda x: x[1], reverse=True)
+        for nutr in nutrients:
+            print('~~~~~~~~~~~', nutrients[nutr])
+        paginator = Paginator(all_food,10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        # print('FOOD RATING:')
+        # rating = {}
+        # for elem in res:
+        #     name = get_object_or_404(Food, id=elem[0])
+        #     rating[name] = elem[1]
+        #     print(name, ':', elem[1])
+        add_context = {'delete_list': delete_list, 'page_obj': page_obj, 'nutrients': nutrients}
 
     print('chosen nutrients', chosen_nutrients, '\nmass_dict:', mass_dict)
 
-    #if chosen_nutrients:
-    #    print('deletelist', delete_list, '\nnutrients:', nutrients)
     context = {'nutrient_list': nutrient_list, 'chosen_nutrients': chosen_nutrients, 'mass_dict': mass_dict}
     if chosen_nutrients:
         context |= add_context
