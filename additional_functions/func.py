@@ -1,6 +1,7 @@
 import json
+import pprint
 
-good_nutrients = ([
+good_nutrients = [
     'Water',
     'Energy',
     'Protein',
@@ -10,16 +11,18 @@ good_nutrients = ([
     'Leucine',
     'Lysine',
     'Methionine',
+    'Methionine + cystine',
     'Phenylalanine',
+    'Phenylalanine + tyrosine',
     'Threonine',
     'Tryptophan',
     'Valine',
     'Taurine', #
-    'Total fat (NLEA)',
+    'Total lipid (fat)',
     'Linoleic acid (ω-6)', #
     'Arachidonic acid (ω-6)', #
     'Alpha-linolenic acid (ω-3)', #
-    'EPA+DHA(ω-3)', #
+    'EPA + DHA (ω-3)', #
     'Calcium, Ca',
     'Phosphorus, P',
     'Potassium, K',
@@ -33,23 +36,34 @@ good_nutrients = ([
     'Selenium, Se',
     'Zinc, Zn',
     'Vitamin A, IU',
-    'Vitamin D (D2 + D3)',
+    'Vitamin D3 (cholecalciferol)',
     'Vitamin E (alpha-tocopherol)',
-    'Vitamin B-1', #
-    'Vitamin B-2',#
-    'Vitamin B-5',#
-    'Vitamin B-6',
+    'Thiamin',  # B1
+    'Riboflavin',  # B2
+    'Pantothenic acid',  # B5
+    'Vitamin B-6', 
     'Vitamin B-12',
-    'Vitamin B-3',#
-    'Vitamin B-9',#
-    'Vitamin B-7',#
+    'Niacin',  # B3
+    'Folate',  # B9
+    'Biotin',  # B7 Biotin
     'Choline, total',
-    'Vitamin K',    #
-])
+    'Vitamin K (phylloquinone)',    
+]
+
+calculated = {
+    'Methionine': 'Methionine + cystine',
+    'Cystine': 'Methionine + cystine',
+    'Phenylalanine': 'Phenylalanine + tyrosine',
+    'Tyrosine': 'Phenylalanine + tyrosine',
+    'PUFA 20:5 n-3 (EPA)': 'EPA + DHA (ω-3)',
+    'PUFA 22:6 n-3 (DHA)': 'EPA + DHA (ω-3)',
+}
+
 nutrients_order = {}
 for i,nutr in enumerate(good_nutrients, 1):
    nutrients_order[nutr] = i
 good_nutrients = set(good_nutrients)
+
 
 food = []
 nutrients = []
@@ -66,6 +80,9 @@ max_food_len=0
 max_foodcat_len=0
 food_pk=0
 num_povtor=1
+calc_nutr_list = []
+calc_nutr={}
+unit_calc_nutr={}
 
 files = [
     ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods'),
@@ -80,9 +97,27 @@ for file_info in files:
         data = json.load(file)
         data = data[file_info[1]]
 
-    for i in range(1, 30): #all data - len(data)
+    for i in range(1, 50):  # all data - len(data)
+
+        #calc nutr for previous food
+        if calc_nutr:
+            
+            for calc_name, value in calc_nutr.items():
+                if value > 0:
+     #               print(data[i]['description'],calc_nutr)
+                    current_nutr = {}
+                    current_nutr['model'] = 'calc.nutrientsquantity'
+                    current_nutr['pk'] = curr_nurt_quantity_pk
+                    curr_nurt_quantity_pk += 1
+                    current_nutr['fields'] = {}
+                    current_nutr['fields']['food'] = food_pk
+                    current_nutr['fields']['nutrient'] = nutrients_dict[calc_name]
+                    current_nutr['fields']['amount'] = value
+                    nutrients.append(current_nutr)
+
+
         if data[i]['description'] in food_added:
-            print('food was added before', num_povtor)
+            print('food was added before', num_povtor, data[i]['description'])
             num_povtor += 1
         else:
             food_added.add(data[i]['description'])
@@ -100,11 +135,19 @@ for file_info in files:
          #   max_foodcat_len = max(max_foodcat_len, len(data[i]['foodCategory']["description"]))
             food.append(current)
 
+            
+
+            calc_nutr = {}
             for j in range(len(data[i]['foodNutrients'])):  # это список нутриентов i-ой еды
 
                 if data[i]['foodNutrients'][j].get('amount') is not None or data[i]['foodNutrients'][j].get('median') is not None:
 
                     name = data[i]['foodNutrients'][j]['nutrient']['name']
+                    # CHANGING NAMES
+                    if name == 'PUFA 18:2 n-6 c,c': name = 'Linoleic acid (ω-6)'
+                    if name == 'PUFA 20:4 n-6': name = 'Arachidonic acid (ω-6)'
+                    if name == 'PUFA 18:3 n-3 c,c,c (ALA)': name = 'Alpha-linolenic acid (ω-3)'
+
                     if name not in nutrients_added:
                         nutrients_added.add(name)
                         # for nutrinents Name and measure
@@ -112,6 +155,7 @@ for file_info in files:
                         nutr_name['model'] = 'calc.nutrientsname'
                         nutr_name['pk'] = nutr_name_pk
                         nutrients_dict[name] = nutr_name_pk
+                   #     print(nutrients_dict)
                         nutr_name_pk += 1
                         nutr_name['fields'] = {}
                         nutr_name['fields']['name'] = name  # создание БД имен
@@ -122,6 +166,21 @@ for file_info in files:
                         else:
                             nutr_name['fields']['is_published'] = 0
                         nutr_name_list.append(nutr_name)
+
+                        if name in calculated:
+                            calc_name = calculated[name]
+                            if nutrients_dict.get(calc_name) is None:
+                                nutr_name = {}
+                                nutr_name['model'] = 'calc.nutrientsname'
+                                nutr_name['pk'] = nutr_name_pk
+                                nutrients_dict[calc_name] = nutr_name_pk
+                                nutr_name_pk += 1
+                                nutr_name['fields'] = {}
+                                nutr_name['fields']['name'] = calc_name  # создание БД имен
+                                nutr_name['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName']  
+                                nutr_name['fields']['is_published'] = 1
+                                nutr_name['fields']['order'] = nutrients_order[calc_name]
+                                nutr_name_list.append(nutr_name)
 
                     # for nutrinents_quantity
                     current_nutr = {}
@@ -137,6 +196,13 @@ for file_info in files:
                         current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['median']
                     nutrients.append(current_nutr)
 
+
+                    # CALCULATING NUTRIENTS
+                    if name in calculated:
+                        calc_name = calculated[name]
+                        calc_nutr[calc_name] = calc_nutr.get(calc_name,0) + data[i]['foodNutrients'][j]['amount']
+                        
+
     # словарь нутриентов
     # nutrients_count = {}
     # for nutrient in nutrients_added:
@@ -148,6 +214,8 @@ for file_info in files:
             print('max_food_len:', max_food_len)
     #     print('max_foodcat_len:', max_foodcat_len)
             print('\n\n\n')
+
+pprint.pp(nutrients_dict)
 
 
 output = nutr_name_list + food + nutrients
