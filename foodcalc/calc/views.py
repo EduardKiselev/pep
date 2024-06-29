@@ -177,7 +177,7 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
                     mass_dict[nutrient] * object.amount, 2)
                 nutrients[nutrient][object.food] = object.amount
         all_food = sorted(totals.items(), key=lambda x: x[1], reverse=True)
-        paginator = Paginator(all_food, 15)
+        paginator = Paginator(all_food, 20)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         add_context = {'delete_list': delete_list, 'page_obj': page_obj, 'nutrients': nutrients}
