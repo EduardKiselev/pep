@@ -6,6 +6,8 @@
 {% endblock %}
 
 {% block content %}
+<div class='row'>
+  <div class='col-md-5'>
     <h2>
     Целевая функция
     </h2>
@@ -34,7 +36,6 @@
 
       {% if request.GET.nutr_add %} <p><h2> {{request.GET.nutr_add}} добавлен!</h2></p> {% endif %}
       {% if request.GET.remove_nutr %} <p><h2> {{request.GET.remove_nutr}} убран!</h2></p> {% endif %}
-
       {% for nutr in delete_list%}
         <p> {{nutr.name}}
           <form method='POST'>
@@ -43,6 +44,8 @@
           <input type="number" Placeholder='{{mass_dict|dict_key:nutr.id}}' name="{{nutr.id}}" style="width: 70px;">
         </form></p>
       {% endfor %}
+    </div>
+    <div class='col-md-7'>
       {% if delete_list %}
       <table>
         <caption>
@@ -80,4 +83,5 @@
       {% include "includes/paginator.html" %}
       
       {% endif %}
+</div>
 {% endblock %}

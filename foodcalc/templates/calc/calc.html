@@ -3,6 +3,7 @@
 {% load multiply%}
 {% load get_type%}
 {% load dict_key%}
+{% load age %}
 
 {% block title %}
   Калькулятор
@@ -49,9 +50,10 @@
     {% else %}
   <h3> Вы выбрали питомца: </h3>
     <p>Кличка: {{chosen_pet.name}} </p>
-    <p>Пол/фертильность: {{chosen_pet.type}} </p>
-    <p>Возраст: {{chosen_pet.age}} </p>
-    <p>Вес: {{chosen_pet.mass}} </p>
+    <p>Тип: {{chosen_pet.type}}{%if chosen_pet.nursing %}, является кормящей {% endif %}</p>
+    <p>Возраст: {{chosen_pet.birthday|age}} месяцев </p>
+    <p>Вес: {{chosen_pet.weight}} кг</p>
+
 
     <a class="btn btn-sm text-muted" href="{% url 'calc:animal_update' chosen_pet.id %}">Редактировать данные о питомце</a>
      <form>

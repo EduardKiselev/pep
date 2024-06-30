@@ -113,3 +113,5 @@ INTERNAL_IPS = [
     ]
 
 LOGIN_REDIRECT_URL = 'calc:index'
+
+LOGIN_URL = '/auth/login/'

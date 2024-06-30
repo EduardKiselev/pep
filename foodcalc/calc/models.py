@@ -69,3 +69,11 @@ class Animal(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RecommendedNutrientLevelsDM(models.Model):
+    pet_type = models.CharField(verbose_name='Тип питомца', max_length=50)
+    pet_stage = models.CharField(verbose_name='Стадия питомца', max_length=50)
+    amount = models.FloatField(verbose_name='Количество')
+    nutrient = models.ForeignKey(NutrientsName, on_delete=models.CASCADE,
+                                 related_name='nutrient', verbose_name='Нутриент')

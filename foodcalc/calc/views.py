@@ -53,7 +53,7 @@ class AnimalDeleteView(LoginRequiredMixin, DeleteView):
         return reverse_lazy('calc:profile',
                             args=(self.request.user,))
 
-
+@login_required
 def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
     template = 'calc/calc.html'
 
@@ -176,8 +176,8 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
                     totals.get(object.food, 0) +
                     mass_dict[nutrient] * object.amount, 2)
                 nutrients[nutrient][object.food] = object.amount
-        all_food = sorted(totals.items(), key=lambda x: x[1], reverse=True)
-        paginator = Paginator(all_food, 20)
+        all_food = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:75]
+        paginator = Paginator(all_food, 15)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         add_context = {'delete_list': delete_list, 'page_obj': page_obj, 'nutrients': nutrients}

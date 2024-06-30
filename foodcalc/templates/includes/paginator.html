@@ -8,7 +8,7 @@
             << </a>
         </li>
       {% endif %}
-      {% comment %} {% for i in page_obj.paginator.page_range %}
+      {% for i in page_obj.paginator.page_range %}
         {% if page_obj.number == i %}
           <li class="page-item active">
             <span class="page-link">{{ i }}</span>
@@ -18,7 +18,7 @@
             <a class="page-link" href="?page={{ i }}">{{ i }}</a>
           </li>
         {% endif %}
-      {% endfor %} {% endcomment %}
+      {% endfor %} 
       {% if page_obj.has_next %}
         <li class="page-item">
           <a class="page-link" href="?page={{ page_obj.next_page_number }}">

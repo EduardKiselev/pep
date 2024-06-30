@@ -3,7 +3,20 @@
 
 {% block content %}
     <h2>{{food.description}}</h2>
+    <table>
+        <thead>
+        <tr>
+          <th> Nutrient </th>
+          <th> Amount </th>
+        </tr>
+      </thead>
+      <tbody>
     {% for nutr in nutrients %}
-       <p> {{nutr.nutrient.name}} : {{nutr.amount}} {{nutr.nutrient.unit_name}}</p>
+        <tr>
+        <td>{{nutr.nutrient.name}}</td>
+        <td>  {{nutr.amount}} {{nutr.nutrient.unit_name}} </td>
+        </tr>
     {% endfor %}
+      </tbody>
+    </table>
 {% endblock %}

@@ -1,0 +1,45 @@
+Energy/ 75 100 175
+Protein/ 33.30 25.00 28.00
+Arginine/ 1.30 1.00 1.07
+Histidine/ 0.35 0.26 0.33
+Isoleucine/ 0.57 0.43 0.54
+Leucine/ 1.36 1.02 1.28
+Lysine/ 0.45 0.34 0.85
+Methionine/ 0.23 0.17 0.44
+Methionine + cystine/ 0.45 0.34 0.88
+Phenylalanine/ 0.53 0.40 0.50
+Phenylalanine + tyrosine/ 2.04 1.53 1.91
+Threonine/ 0.69 0.52 0.65
+Tryptophan/ 0.17 0.13 0.16
+Valine/ 0.68 0.51 0.64
+Taurine/ 0.13 0.10 0.10
+Total lipid (fat)/ 9.00 9.00 9.00
+Linoleic acid (omega-6)/ 0.67 0.50 0.55
+Arachidonic acid (omega-6)/ 8.00 6.00 20.00
+Alpha-linolenic acid (omega-3)/ 0 0 0.02
+EPA + DHA (omega-3)/ 0 0 0.01
+Calcium, Ca/ 0.53 0.40 1.00
+Phosphorus, P/ 0.35 0.26 0.84
+Potassium, K/ 0.80 0.60 0.60
+Sodium, Na/ 0.10 0.08 0.16
+Chloride/ 0.15 0.11 0.24
+Magnesium, Mg/ 0.05 0.04 0.05
+Copper, Cu/ 0.67 0.50 1.00
+Iodine, I/ 0.17 0.13 0.18
+Iron, Fe/ 10.70 8.00 8.00
+Manganese, Mn/ 0.67 0.50 1.00
+Selenium, Se/ 35.00 26.00 30.00
+Zinc, Zn/ 10.00 7.50 7.50
+Vitamin A, IU/ 444.00 333.00 900.00
+Vitamin D3 (cholecalciferol)/ 33.30 25.00 28.00
+Vitamin E (alpha-tocopherol)/ 5.07 3.80 3.80
+Thiamine/ 0.59 0.44 0.55
+Riboflavin/ 0.42 0.32 0.32
+Pantothenic acid/ 0.77 0.58 0.57
+Vitamin B-6/ 0.33 0.25 0.25
+Vitamin B-12/ 2.35 1.76 1.80
+Niacin/ 4.21 3.20 3.20
+Folate, total/ 101.00 75.00 75.00
+Biotin/ 8.00 6.00 7.00
+Choline, total/ 320.00 240.00 240.00
+Vitamin K (phylloquinone)/ 0 0 0 

@@ -19,10 +19,10 @@ good_nutrients = [
     'Valine',
     'Taurine', #
     'Total lipid (fat)',
-    'Linoleic acid (ω-6)', #
-    'Arachidonic acid (ω-6)', #
-    'Alpha-linolenic acid (ω-3)', #
-    'EPA + DHA (ω-3)', #
+    'Linoleic acid (omega-6)', #
+    'Arachidonic acid (omega-6)', #
+    'Alpha-linolenic acid (omega-3)', #
+    'EPA + DHA (omega-3)', #
     'Calcium, Ca',
     'Phosphorus, P',
     'Potassium, K',
@@ -38,13 +38,13 @@ good_nutrients = [
     'Vitamin A, IU',
     'Vitamin D3 (cholecalciferol)',
     'Vitamin E (alpha-tocopherol)',
-    'Thiamin',  # B1
+    'Thiamine',  # B1
     'Riboflavin',  # B2
     'Pantothenic acid',  # B5
     'Vitamin B-6', 
     'Vitamin B-12',
     'Niacin',  # B3
-    'Folate',  # B9
+    'Folate, total',  # B9
     'Biotin',  # B7 Biotin
     'Choline, total',
     'Vitamin K (phylloquinone)',    
@@ -55,8 +55,8 @@ calculated = {
     'Cystine': 'Methionine + cystine',
     'Phenylalanine': 'Phenylalanine + tyrosine',
     'Tyrosine': 'Phenylalanine + tyrosine',
-    'PUFA 20:5 n-3 (EPA)': 'EPA + DHA (ω-3)',
-    'PUFA 22:6 n-3 (DHA)': 'EPA + DHA (ω-3)',
+    'PUFA 20:5 n-3 (EPA)': 'EPA + DHA (omega-3)',
+    'PUFA 22:6 n-3 (DHA)': 'EPA + DHA (omega-3)',
 }
 
 nutrients_order = {}
@@ -97,11 +97,10 @@ for file_info in files:
         data = json.load(file)
         data = data[file_info[1]]
 
-    for i in range(1, 50):  # all data - len(data)
+    for i in range(1, 30):  # all data - len(data)
 
         #calc nutr for previous food
-        if calc_nutr:
-            
+        if calc_nutr:     
             for calc_name, value in calc_nutr.items():
                 if value > 0:
      #               print(data[i]['description'],calc_nutr)
@@ -144,9 +143,9 @@ for file_info in files:
 
                     name = data[i]['foodNutrients'][j]['nutrient']['name']
                     # CHANGING NAMES
-                    if name == 'PUFA 18:2 n-6 c,c': name = 'Linoleic acid (ω-6)'
-                    if name == 'PUFA 20:4 n-6': name = 'Arachidonic acid (ω-6)'
-                    if name == 'PUFA 18:3 n-3 c,c,c (ALA)': name = 'Alpha-linolenic acid (ω-3)'
+                    if name == 'PUFA 18:2 n-6 c,c': name = 'Linoleic acid (omega-6)'
+                    if name == 'PUFA 20:4 n-6': name = 'Arachidonic acid (omega-6)'
+                    if name == 'PUFA 18:3 n-3 c,c,c (ALA)': name = 'Alpha-linolenic acid (omega-3)'
 
                     if name not in nutrients_added:
                         nutrients_added.add(name)
@@ -155,7 +154,6 @@ for file_info in files:
                         nutr_name['model'] = 'calc.nutrientsname'
                         nutr_name['pk'] = nutr_name_pk
                         nutrients_dict[name] = nutr_name_pk
-                   #     print(nutrients_dict)
                         nutr_name_pk += 1
                         nutr_name['fields'] = {}
                         nutr_name['fields']['name'] = name  # создание БД имен
@@ -217,8 +215,61 @@ for file_info in files:
 
 pprint.pp(nutrients_dict)
 
+#read recommendednutrientlevels
 
-output = nutr_name_list + food + nutrients
+files = ['dog.txt', 'cat.txt']
+pk = 1
+dog_seq_of_data = ['adult_sterilized', 'adult', 'early_growth', 'late_growth']
+cat_seq_of_data = ['adult_sterilized', 'adult', 'growth/reproduction']
+recommendednutrientlevels = []
+
+for file in files:
+    if file == 'dog.txt':
+        pet_type = 'dog'
+        seq = dog_seq_of_data
+    elif file == 'cat.txt':
+        pet_type = 'cat'
+        seq = cat_seq_of_data
+
+    with open(file, 'r') as input:
+        print('START', file)
+        for line in input.readlines():
+            nutrient, data = line.split('/')
+            data = data.split()
+   #         print(nutrient, len(data))
+            for index, d in enumerate(data):
+                nutr = {}
+                nutr['model'] = 'calc.recommendednutrientlevelsdm'
+                nutr['pk'] = pk
+                pk += 1
+                nutr['fields'] = {}
+                nutr['fields']['pet_type'] = pet_type
+                nutr['fields']['pet_stage'] = seq[index]
+                nutr['fields']['amount'] = float(d)
+                if nutrients_dict.get(nutrient) is None:
+                    nutr_name = {}
+                    nutr_name['model'] = 'calc.nutrientsname'
+                    nutr_name['pk'] = nutr_name_pk
+                    nutrients_dict[nutrient] = nutr_name_pk
+                    nutr_name_pk += 1
+                    nutr_name['fields'] = {}
+                    nutr_name['fields']['name'] = nutrient 
+                    nutr_name['fields']['unit_name'] = 'unknown'
+                    print('MAKE UNLNOWN,',nutrient,nutr_name_pk)
+                    if nutrient in good_nutrients:
+                        nutr_name['fields']['is_published'] = 1
+                        nutr_name['fields']['order'] = nutrients_order[nutrient]
+                    else:
+                        nutr_name['fields']['is_published'] = 0
+                    nutr_name_list.append(nutr_name)
+
+                nutr['fields']['nutrient'] = nutrients_dict[nutrient]
+                recommendednutrientlevels.append(nutr)
+
+
+
+
+output = nutr_name_list + food + nutrients + recommendednutrientlevels
 
 with open('small_data.json', 'w') as file:
     json.dump(output, file)
