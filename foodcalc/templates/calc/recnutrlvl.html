@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Таблица рекомендованных нутриентов
+{% endblock %}
+
+
+{% block content %}
+<table >
+    <caption>
+        <h2> Таблица рекомендованных нутриентов </h2>
+      </caption>
+      <thead>
+        <tr>
+          <th> Nutrient </th>
+          {% for stage in pet_stages %}
+            <th> <p>{{stage.pet_type}}</p>-{{stage.pet_stage}}- </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for nutr_name in nutrients_name %}
+        <tr>
+        <th>
+            {{nutr_name.name}}, {{nutr_name.unit_name}}
+        </th>
+        {% for stage in pet_stages %}
+            {% with nutr_list=nutrient_dict|dict_key:stage.pet_stage %}
+            <td style="text-align: center; vertical-align: middle;">
+            {{nutr_list|dict_key:nutr_name}}  
+            </td>
+            {% endwith %}
+        {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+</table>
+{% endblock %}

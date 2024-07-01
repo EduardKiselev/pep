@@ -1,11 +1,14 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from calc.models import Food, NutrientsName, NutrientsQuantity, User, Animal
+from calc.models import Food, NutrientsName, NutrientsQuantity, User, Animal, AnimalType, RecommendedNutrientLevelsDM, PetStage
 from calc.forms import FoodForm, RemoveFoodForm, NutrinentForm, RemoveNutrinentForm, ProfileForm, PetForm
 from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django import forms
+
+import pprint
 
 
 class FoodDetailView(DetailView):
@@ -24,11 +27,25 @@ class FoodDetailView(DetailView):
 
 class AnimalCreateView(LoginRequiredMixin, CreateView):
     model = Animal
-    fields = ['name', 'type', 'nursing', 'weight', 'birthday']
+    fields = ['name', 'type', 'nursing', 'sterilized', 'weight', 'birthday']
     template_name = 'animal/create.html'
 
     def form_valid(self, form):
+        self.object = form.save(commit=False)
+
+        sterilized = form.cleaned_data.get('sterilized')
+        nursing = form.cleaned_data.get('nursing')
+        if sterilized*nursing:
+            form.add_error('nursing', forms.ValidationError('не возможно быть одновременно стерилизованным и кормящим/беременным'))
+            return super().form_invalid(form)
+
+        name = form.cleaned_data.get('name')
+        if len(Animal.objects.filter(name=name, owner=self.request.user)) == 1:
+            form.add_error('name', forms.ValidationError('У вас уже есть питомец с этим именем'))
+            return super().form_invalid(form)
+
         form.instance.owner = self.request.user
+        self.object.save()
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -117,6 +134,9 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
                 totals.get(nutr.nutrient.name, 0)
                 + mass_dict[food_id] * nutr.amount/100, 2
                                               )
+
+    # ADD HERE
+
 
     context = {"form": form, "showfood": foodlist, "mass_dict": mass_dict, 'pet_list': pet_list}
     if chosen_food:
@@ -210,4 +230,24 @@ def profile_update(request):
     if form.is_valid():
         form.save()
         return redirect('calc:index')
+    return render(request, template, context)
+
+
+def recnutrlvl(request):
+    template = 'calc/recnutrlvl.html'
+    pet_stages = PetStage.objects.all().select_related('pet_type')
+    nutrients = RecommendedNutrientLevelsDM.objects.all().select_related('nutrient_name')
+    nutrients_name = NutrientsName.objects.exclude(name='Water').filter(is_published=True).order_by('order')
+    nutrient_dict = {}  
+    for stage in pet_stages:
+        nutrient_dict[stage.pet_stage] = {}
+        object = nutrients.filter(pet_stage=stage)
+        for obj in object:
+            nutrient_dict[stage.pet_stage][obj.nutrient_name] = obj.nutrient_amount
+
+    context = {
+        'pet_stages': pet_stages,
+        'nutrient_dict': nutrient_dict,
+        'nutrients_name': nutrients_name
+    }
     return render(request, template, context)

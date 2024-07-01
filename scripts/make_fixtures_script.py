@@ -17,12 +17,12 @@ good_nutrients = [
     'Threonine',
     'Tryptophan',
     'Valine',
-    'Taurine', #
+    'Taurine',  #
     'Total lipid (fat)',
-    'Linoleic acid (omega-6)', #
-    'Arachidonic acid (omega-6)', #
-    'Alpha-linolenic acid (omega-3)', #
-    'EPA + DHA (omega-3)', #
+    'Linoleic acid (omega-6)',  #
+    'Arachidonic acid (omega-6)',  #
+    'Alpha-linolenic acid (omega-3)',  #
+    'EPA + DHA (omega-3)',  #
     'Calcium, Ca',
     'Phosphorus, P',
     'Potassium, K',
@@ -41,13 +41,13 @@ good_nutrients = [
     'Thiamine',  # B1
     'Riboflavin',  # B2
     'Pantothenic acid',  # B5
-    'Vitamin B-6', 
+    'Vitamin B-6',
     'Vitamin B-12',
     'Niacin',  # B3
     'Folate, total',  # B9
     'Biotin',  # B7 Biotin
     'Choline, total',
-    'Vitamin K (phylloquinone)',    
+    'Vitamin K (phylloquinone)',
 ]
 
 calculated = {
@@ -60,7 +60,7 @@ calculated = {
 }
 
 nutrients_order = {}
-for i,nutr in enumerate(good_nutrients, 1):
+for i, nutr in enumerate(good_nutrients, 1):
    nutrients_order[nutr] = i
 good_nutrients = set(good_nutrients)
 
@@ -69,20 +69,20 @@ food = []
 nutrients = []
 nutrients_measure = []
 nutrients_added = set()
-food_added=set()
+food_added = set()
 pk_measure = 1
-nutr_name_pk=1
+nutr_name_pk = 1
 nutrient_id = 1
 nutrients_dict = {}
 nutr_name_list = []
 curr_nurt_quantity_pk = 1
-max_food_len=0
-max_foodcat_len=0
-food_pk=0
-num_povtor=1
+max_food_len = 0
+max_foodcat_len = 0
+food_pk = 0
+num_povtor = 1
 calc_nutr_list = []
-calc_nutr={}
-unit_calc_nutr={}
+calc_nutr = {}
+unit_calc_nutr = {}
 
 files = [
     ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods'),
@@ -99,8 +99,8 @@ for file_info in files:
 
     for i in range(1, 30):  # all data - len(data)
 
-        #calc nutr for previous food
-        if calc_nutr:     
+        # calc nutr for previous food
+        if calc_nutr:
             for calc_name, value in calc_nutr.items():
                 if value > 0:
      #               print(data[i]['description'],calc_nutr)
@@ -213,39 +213,77 @@ for file_info in files:
     #     print('max_foodcat_len:', max_foodcat_len)
             print('\n\n\n')
 
-pprint.pp(nutrients_dict)
+#pprint.pp(nutrients_dict)
 
 #read recommendednutrientlevels
 
 files = ['dog.txt', 'cat.txt']
 pk = 1
-dog_seq_of_data = ['adult_sterilized', 'adult', 'early_growth', 'late_growth']
-cat_seq_of_data = ['adult_sterilized', 'adult', 'growth/reproduction']
+seq_of_data = {
+    'dog': ['adult_sterilized', 'adult', 'early_growth', 'late_growth'],
+    'cat': ['adult_sterilized', 'adult', 'growth/reproduction'],
+}
 recommendednutrientlevels = []
+
+# animal_type_fixtures
+animal_pk = 1
+animal_type_dict = {}
+animal_types = []
+for type in seq_of_data:
+    animal_type = {}
+    animal_type['model'] = 'calc.animaltype'
+    animal_type['pk'] = animal_pk
+    animal_type_dict[type] = animal_pk
+    animal_pk += 1
+    animal_type['fields'] = {}
+    animal_type['fields']['title'] = type
+    animal_type['fields']['description'] = ''
+    animal_types.append(animal_type)
+
+print(animal_type_dict)
+
+# pet_stages
+pet_stage_pk = 1
+pet_stage_dict = {}
+pet_stages = []
+for type_animal in seq_of_data:
+    for stage in seq_of_data[type_animal]:
+        pet_stage = {}
+        pet_stage['model'] = 'calc.petstage'
+        pet_stage['pk'] = pet_stage_pk
+        pet_stage_dict[type_animal+'_'+stage] = pet_stage_pk
+        pet_stage_pk += 1
+        pet_stage['fields'] = {}
+        pet_stage['fields']['pet_type'] = animal_type_dict[type_animal]
+        pet_stage['fields']['pet_stage'] = stage
+        pet_stages.append(pet_stage)
+
+pprint.pp(pet_stage_dict)
+pprint.pp(pet_stages)
 
 for file in files:
     if file == 'dog.txt':
         pet_type = 'dog'
-        seq = dog_seq_of_data
+        seq = seq_of_data['dog']
     elif file == 'cat.txt':
         pet_type = 'cat'
-        seq = cat_seq_of_data
+        seq = seq_of_data['cat']
 
     with open(file, 'r') as input:
         print('START', file)
         for line in input.readlines():
             nutrient, data = line.split('/')
             data = data.split()
-   #         print(nutrient, len(data))
+
             for index, d in enumerate(data):
                 nutr = {}
                 nutr['model'] = 'calc.recommendednutrientlevelsdm'
                 nutr['pk'] = pk
                 pk += 1
                 nutr['fields'] = {}
-                nutr['fields']['pet_type'] = pet_type
-                nutr['fields']['pet_stage'] = seq[index]
-                nutr['fields']['amount'] = float(d)
+                nutr['fields']['pet_type'] = animal_type_dict[pet_type]
+                nutr['fields']['pet_stage'] = pet_stage_dict[pet_type+'_'+seq[index]]
+                nutr['fields']['nutrient_amount'] = float(d)
                 if nutrients_dict.get(nutrient) is None:
                     nutr_name = {}
                     nutr_name['model'] = 'calc.nutrientsname'
@@ -255,7 +293,7 @@ for file in files:
                     nutr_name['fields'] = {}
                     nutr_name['fields']['name'] = nutrient 
                     nutr_name['fields']['unit_name'] = 'unknown'
-                    print('MAKE UNLNOWN,',nutrient,nutr_name_pk)
+                    print('MAKE UNKNOWN,', nutrient, nutr_name_pk)
                     if nutrient in good_nutrients:
                         nutr_name['fields']['is_published'] = 1
                         nutr_name['fields']['order'] = nutrients_order[nutrient]
@@ -263,14 +301,13 @@ for file in files:
                         nutr_name['fields']['is_published'] = 0
                     nutr_name_list.append(nutr_name)
 
-                nutr['fields']['nutrient'] = nutrients_dict[nutrient]
+                nutr['fields']['nutrient_name'] = nutrients_dict[nutrient]
                 recommendednutrientlevels.append(nutr)
 
 
-
-
-output = nutr_name_list + food + nutrients + recommendednutrientlevels
+output = nutr_name_list + food + nutrients +\
+     animal_types + pet_stages + recommendednutrientlevels
 
 with open('small_data.json', 'w') as file:
     json.dump(output, file)
-    #    json.dump(nutrients_added, file)
+

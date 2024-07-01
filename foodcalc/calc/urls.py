@@ -14,4 +14,5 @@ urlpatterns = [
     path('animal/create/', views.AnimalCreateView.as_view(), name='animal_create'),
     path('animal/<int:pk>/edit/', views.AnimalUpdateView.as_view(), name='animal_update'),
     path('animal/<int:pk>/delete/', views.AnimalDeleteView.as_view(), name='animal_delete'),
+    path('rec-nutr-lvl/', views.recnutrlvl, name='recnutrlvl')
 ]
