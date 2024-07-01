@@ -83,6 +83,7 @@ num_povtor = 1
 calc_nutr_list = []
 calc_nutr = {}
 unit_calc_nutr = {}
+povtor_list = []
 
 files = [
     ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods'),
@@ -97,7 +98,7 @@ for file_info in files:
         data = json.load(file)
         data = data[file_info[1]]
 
-    for i in range(1, 30):  # all data - len(data)
+    for i in range(1, len(data)):  # all data - len(data)
 
         # calc nutr for previous food
         if calc_nutr:
@@ -116,7 +117,8 @@ for file_info in files:
 
 
         if data[i]['description'] in food_added:
-   #         print('food was added before', num_povtor, data[i]['description'])
+            print('food was added before', num_povtor, data[i]['description'])
+            povtor_list.append(data[i]['description'])
             num_povtor += 1
         else:
             food_added.add(data[i]['description'])
@@ -240,8 +242,6 @@ for type in seq_of_data:
     animal_type['fields']['description'] = ''
     animal_types.append(animal_type)
 
-# print(animal_type_dict)
-
 # pet_stages
 pet_stage_pk = 1
 pet_stage_dict = {}
@@ -300,6 +300,7 @@ for file in files:
         for line in input.readlines():
             nutrient, data = line.split('/')
             data = data.split()
+            data.append(data[-1])
 
             for index, d in enumerate(data):
                 nutr = {}
@@ -334,6 +335,7 @@ for file in files:
 output = nutr_name_list + food + nutrients +\
      animal_types + pet_stages + recommendednutrientlevels
 
-with open('small_data.json', 'w') as file:
+with open('all_data.json', 'w') as file:
     json.dump(output, file)
 
+pprint.pp(povtor_list)

@@ -24,13 +24,17 @@
         <th>
             {{nutr_name.name}}, {{nutr_name.unit_name}}
         </th>
+        {% for type in stage.pet_type %}
         {% for stage in pet_stages %}
-            {% with nutr_list=nutrient_dict|dict_key:stage.pet_stage %}
+
+          {{nutrient_dict|dict_key:type}}
+            {% with nutr_list=nutrient_dict|dict_key:stage.pet_stage|dict_key:type %}
             <td style="text-align: center; vertical-align: middle;">
             {{nutr_list|dict_key:nutr_name}}  
             </td>
             {% endwith %}
         {% endfor %}
+        {%endfor%}
         </tr>
         {% endfor %}
       </tbody>

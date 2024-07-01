@@ -267,13 +267,17 @@ def recnutrlvl(request):
     pet_stages = PetStage.objects.all().select_related('pet_type')
     nutrients = RecommendedNutrientLevelsDM.objects.all().select_related('nutrient_name')
     nutrients_name = NutrientsName.objects.exclude(name='Water').filter(is_published=True).order_by('order')
-    nutrient_dict = {}  
+    nutrient_dict = {}
+
+
     for stage in pet_stages:
-        nutrient_dict[stage.pet_stage] = {}
+        print('!!!!!!!!!!!!!!!!!!!!',stage)
+        nutrient_dict[stage.pet_type.title]= {}
+        nutrient_dict[stage.pet_type.title][stage.pet_stage] = {}
         object = nutrients.filter(pet_stage=stage)
         for obj in object:
-            nutrient_dict[stage.pet_stage][obj.nutrient_name] = obj.nutrient_amount
-
+            nutrient_dict[stage.pet_type.title][stage.pet_stage][obj.nutrient_name] = obj.nutrient_amount
+        pprint.pp(nutrient_dict)
     context = {
         'pet_stages': pet_stages,
         'nutrient_dict': nutrient_dict,
