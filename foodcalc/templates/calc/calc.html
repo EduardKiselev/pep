@@ -50,7 +50,7 @@
     {% else %}
   <h3> Вы выбрали питомца: </h3>
     <p>Кличка: {{chosen_pet.name}} </p>
-    <p>Тип: {{chosen_pet.type}}{%if chosen_pet.nursing %}, является кормящей {% endif %}</p>
+    <p>Тип: {{chosen_pet.type}}{%if chosen_pet.nursing %}, является кормящей {% endif %}{%if chosen_pet.sterilized %}, питомец стерилизован {% endif %}</p>
     <p>Возраст: {{chosen_pet.birthday|age}} месяцев </p>
     <p>Вес: {{chosen_pet.weight}} кг</p>
 
@@ -69,7 +69,7 @@
      {% if request.GET.remove_food %} <p><h2> {{request.GET.remove_food}} убран!</h2></p> {% endif %}
 
     {% if items_name %}
-      <table>
+      {% comment %} <table>
         <caption>
           <h2> Калькулятор </h2>
         </caption>
@@ -124,7 +124,75 @@
           {% endfor %}
 
         </tbody>
-      </table>
+      </table> {% endcomment %}
+      <table>
+      <caption>
+        <h2> Калькулятор </h2>
+      </caption>
+      <thead>
+        <tr>
+          <th> Food </th>
+          {% for item in items_name%}
+
+          <th> --{{item.description}}-- </th>
+          {% endfor %}
+        <th>
+          TOTALS
+        </th>
+        {% if chosen_pet %}
+        <th>
+          Recommended
+        </th>
+        {% endif %}
+        </tr>
+      </thead>  
+      <tbody>    
+        <tr>
+            <th> Mass </th>
+            {% for item in items_name%}
+            <td>
+            <form method='POST'>
+              {% csrf_token %} 
+              <label for='quan_{{food}}'> </label>
+              <input type="number" Placeholder='{{mass_dict|dict_key:item.id}}' name="mass_{{item.id}}" style="width: 100px;">
+            </form>
+            </td>       
+            {% endfor %}
+            <td>
+            {{ mass_dict|dict_key:0 }}   
+            </td>
+        </tr>
+        {% for nutrient_name in columns %}
+        <tr>
+          <td>
+         {{nutrient_name.name}}, {{nutrient_name.unit_name}}
+          </td>
+        {% for item in items_name%}
+        <td>
+          {% for food in items%}
+           {% for elem in food%} 
+          {% if elem.nutrient == nutrient_name and item == elem.food %}      
+            {% multiply elem.amount mass_dict|dict_key:item.id %}
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </td>
+          {% endfor %}
+          <th>
+            {% if totals|dict_key:nutrient_name.name%}
+              {{totals|dict_key:nutrient_name.name}}
+            {% endif %}
+          </th>
+          {% if chosen_pet %}
+          <td>
+            {{recommended_nutr|dict_key:nutrient_name}}
+          </td>
+          {% endif %}
+        </tr>
+          {% endfor %}
+
+      </tbody>
+    </table>
     {% endif %}
 
 {% endblock %}

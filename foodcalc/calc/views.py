@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django import forms
+from calc.utils import pet_stage_calculate
 
 import pprint
 
@@ -55,7 +56,20 @@ class AnimalCreateView(LoginRequiredMixin, CreateView):
 class AnimalUpdateView(LoginRequiredMixin, UpdateView):
     model = Animal
     template_name = 'animal/create.html'
-    fields = ['name', 'type', 'nursing', 'weight', 'birthday']
+    fields = ['name', 'type', 'nursing', 'sterilized', 'weight', 'birthday']
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+
+        sterilized = form.cleaned_data.get('sterilized')
+        nursing = form.cleaned_data.get('nursing')
+        if sterilized*nursing:
+            form.add_error('nursing', forms.ValidationError('не возможно быть одновременно стерилизованным и кормящим/беременным'))
+            return super().form_invalid(form)
+
+        form.instance.owner = self.request.user
+        self.object.save()
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy('calc:profile',
@@ -134,8 +148,22 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
                 totals.get(nutr.nutrient.name, 0)
                 + mass_dict[food_id] * nutr.amount/100, 2
                                               )
+        mass_dict[0] = sum(mass_dict.values())-mass_dict.get(0,0)
 
+        print('MASS!!!!!!!!!!!!',mass_dict)
     # ADD HERE
+    if chosen_pet:
+        tmp = pet_stage_calculate(chosen_pet[0])
+        if not tmp:
+            return redirect('calc:index')
+        else:
+            pet_stage, weight = tmp
+
+
+            rec_nutr = RecommendedNutrientLevelsDM.objects.filter(pet_stage__id=pet_stage.id)
+            recommended ={}
+            for nutr in rec_nutr.iterator():
+                recommended[nutr.nutrient_name] = nutr.nutrient_amount
 
 
     context = {"form": form, "showfood": foodlist, "mass_dict": mass_dict, 'pet_list': pet_list}
@@ -147,11 +175,12 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
             'items_name': items_name,
             'totals': totals
                    }
-
     if chosen_pet:
         context |= {
-            'chosen_pet': chosen_pet[0]
+            'chosen_pet': chosen_pet[0],
+            'recommended_nutr': recommended,
         }
+
     return render(request, template, context)
 
 

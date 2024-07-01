@@ -116,7 +116,7 @@ for file_info in files:
 
 
         if data[i]['description'] in food_added:
-            print('food was added before', num_povtor, data[i]['description'])
+   #         print('food was added before', num_povtor, data[i]['description'])
             num_povtor += 1
         else:
             food_added.add(data[i]['description'])
@@ -220,8 +220,8 @@ for file_info in files:
 files = ['dog.txt', 'cat.txt']
 pk = 1
 seq_of_data = {
-    'dog': ['adult_sterilized', 'adult', 'early_growth', 'late_growth'],
-    'cat': ['adult_sterilized', 'adult', 'growth/reproduction'],
+    'dog': ['adult_sterilized', 'adult', 'early_growth', 'late_growth', 'reproduction'],
+    'cat': ['adult_sterilized', 'adult', 'growth', 'reproduction'],
 }
 recommendednutrientlevels = []
 
@@ -240,7 +240,7 @@ for type in seq_of_data:
     animal_type['fields']['description'] = ''
     animal_types.append(animal_type)
 
-print(animal_type_dict)
+# print(animal_type_dict)
 
 # pet_stages
 pet_stage_pk = 1
@@ -255,11 +255,37 @@ for type_animal in seq_of_data:
         pet_stage_pk += 1
         pet_stage['fields'] = {}
         pet_stage['fields']['pet_type'] = animal_type_dict[type_animal]
+        
+        print(stage)
+        if 'sterilized' in stage:
+            pet_stage['fields']['sterilized'] = True
+
+        else:
+            pet_stage['fields']['sterilized'] = False
+        if 'reproduction' in stage:
+            pet_stage['fields']['nursing'] = True
+        else:
+            pet_stage['fields']['nursing'] = False
+        if 'early_growth' in stage:
+            age_start = 0
+            age_finish = 3
+        elif 'late_growth' in stage:
+            age_start = 3
+            age_finish = 12
+        elif 'growth' in stage:
+            age_start = 0
+            age_finish = 12
+        else:
+            age_start = 12
+            age_finish = 9999
+        pet_stage['fields']['age_start'] = age_start
+        pet_stage['fields']['age_finish'] = age_finish
+
         pet_stage['fields']['pet_stage'] = stage
         pet_stages.append(pet_stage)
 
-pprint.pp(pet_stage_dict)
-pprint.pp(pet_stages)
+# pprint.pp(pet_stage_dict)
+# pprint.pp(pet_stages)
 
 for file in files:
     if file == 'dog.txt':
@@ -293,7 +319,7 @@ for file in files:
                     nutr_name['fields'] = {}
                     nutr_name['fields']['name'] = nutrient 
                     nutr_name['fields']['unit_name'] = 'unknown'
-                    print('MAKE UNKNOWN,', nutrient, nutr_name_pk)
+                #    print('MAKE UNKNOWN,', nutrient, nutr_name_pk)
                     if nutrient in good_nutrients:
                         nutr_name['fields']['is_published'] = 1
                         nutr_name['fields']['order'] = nutrients_order[nutrient]

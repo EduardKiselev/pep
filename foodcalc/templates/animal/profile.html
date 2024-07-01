@@ -25,7 +25,7 @@
       <p><h3> {{animal.name}} </h3></p>
       <p> Информация о питомце:</p> 
       <p>дата рождения: {{animal.birthday}}, возраст {{animal.birthday|age}} месяцев</p> 
-      <p>тип {{animal.type}} {%if animal.nursing %}, является кормящей {% endif %}, вес {{animal.weight}} кг </p>
+      <p>тип {{animal.type}} {%if animal.nursing %}, является кормящей {% endif %} {%if animal.sterilized %}, питомец стерилизован {% endif %}, вес {{animal.weight}} кг </p>
       <a href="{% url 'calc:animal_update' animal.id %}">Редактировать</a>
       <a href="{% url 'calc:animal_delete' animal.id %}">Удалить</a>
     </article>

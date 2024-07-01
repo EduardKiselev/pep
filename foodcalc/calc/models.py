@@ -73,12 +73,15 @@ class Animal(models.Model):
 
 
 class PetStage(models.Model):
-    pet_type = models.ForeignKey(AnimalType, on_delete=models.CASCADE,
-                                 verbose_name='тип питомца')
+    pet_type = models.ForeignKey(AnimalType, on_delete=models.CASCADE, verbose_name='тип питомца')
     pet_stage = models.CharField(verbose_name='Стадия питомца', max_length=50)
-    
+    sterilized = models.BooleanField(verbose_name='питомец стерилизован?')
+    nursing = models.BooleanField(verbose_name='Является ли питомец кормящей')
+    age_start = models.IntegerField(verbose_name='начало стадии', help_text='с какого возраста начинается эта стадия')
+    age_finish = models.IntegerField(verbose_name='конец стадии', help_text='до какого возраста длится эта стадия')
+
     def __str__(self):
-        return 'class ' + str(self.pet_stage)
+        return 'cls ' + str(self.pet_type) + ' ' + str(self.pet_stage) +' ster:'+str(self.sterilized)
 
 
 class RecommendedNutrientLevelsDM(models.Model):
@@ -88,5 +91,6 @@ class RecommendedNutrientLevelsDM(models.Model):
     nutrient_amount = models.FloatField(verbose_name='Количество')
     nutrient_name = models.ForeignKey(NutrientsName, on_delete=models.CASCADE,
                                  related_name='nutrient_info', verbose_name='Нутриент')
+
     def __str__(self):
         return str(self.pet_stage) + ' ' + str(self.nutrient_name)
