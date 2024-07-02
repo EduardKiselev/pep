@@ -8,6 +8,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django import forms
 from calc.utils import pet_stage_calculate
+import datetime
+
+from pathlib import Path
+import os
 
 import pprint
 
@@ -22,7 +26,6 @@ class FoodDetailView(DetailView):
         nutrients = NutrientsQuantity.objects.select_related('nutrient', 'food').filter(
             food_id=self.kwargs.get(self.pk_url_kwarg), nutrient__is_published=True).order_by('nutrient__order')
         context['nutrients'] = nutrients
-        print(context['nutrients'])
         return context
 
 
@@ -119,6 +122,15 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
                 mass = int(request.POST['mass_' + str(food_id)])
                 if mass > 0:
                     mass_dict[food_id] = mass
+        # if 'make_file' in request.POST.keys():
+        #     path  = Path(__file__).resolve().parent.parent
+        #     print(type(path))
+        #     base_dir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        #     filename = chosen_pet[0].name+'_'+str(datetime.datetime.now().date())
+        #     file_path = base_dir+'/files/'+filename+'.txt'
+        #     print('time to make file!')
+        #     with open(file_path,'w') as file:
+        #         pprint.pp(context,file)
 
     foodlist = Food.objects.exclude(id__in=chosen_food)
     pet_list = Animal.objects.filter(owner=request.user)
@@ -127,7 +139,41 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
     nutrients = []
     items_name = []
     totals = {}
+
+    # Pet
+    if chosen_pet:
+        tmp = pet_stage_calculate(chosen_pet[0])
+        if not tmp:
+            return redirect('calc:index')
+        else:
+            pet_stage, weight = tmp
+            pet_stage_info = get_object_or_404(PetStage, id=pet_stage.id)
+            rec_nutr = RecommendedNutrientLevelsDM.objects.filter(pet_stage__id=pet_stage.id).select_related('nutrient_name')
+            recommended = {}
+            for nutr in rec_nutr.iterator():
+                recommended[nutr.nutrient_name] = nutr.nutrient_amount
+                if nutr.nutrient_name.name == 'Energy':
+                    recommended[nutr.nutrient_name] = str(round(get_object_or_404(rec_nutr,nutrient_name__name='Energy').nutrient_amount*(weight)**(0.75),2))+'kcal'
+                if nutr.nutrient_name.name == 'Water':
+                    recommended[nutr.nutrient_name] = ' '
+
+
+    # Food
     if chosen_food:
+        mass_dict[0] = sum(mass_dict.values())-mass_dict.get(0,0)
+
+        # Totals
+        for food_id in chosen_food:
+            all_nutr = NutrientsQuantity.objects.select_related(
+                'nutrient').filter(
+                    food__id=food_id, nutrient__is_published=True)
+            for nutr in all_nutr.iterator():
+                totals[nutr.nutrient.name] = round(
+                    totals.get(nutr.nutrient.name, 0)
+                    + mass_dict[food_id] * nutr.amount/100, 2
+                                                )
+
+        # Food nutrients
         delete_list = Food.objects.filter(id__in=chosen_food)
         for elem in chosen_food:
             item = [NutrientsQuantity.objects.select_related(
@@ -137,35 +183,20 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
             nutrients += item
             item_name = get_object_or_404(Food, id=elem)
             items_name += [item_name]
-    columns = NutrientsName.objects.filter(is_published=True).order_by('order')
 
-    for food_id in chosen_food:
-        all_nutr = NutrientsQuantity.objects.select_related(
-            'nutrient').filter(
-                food__id=food_id, nutrient__is_published=True)
-        for nutr in all_nutr.iterator():
-            totals[nutr.nutrient.name] = round(
-                totals.get(nutr.nutrient.name, 0)
-                + mass_dict[food_id] * nutr.amount/100, 2
-                                              )
-        mass_dict[0] = sum(mass_dict.values())-mass_dict.get(0,0)
-
-        print('MASS!!!!!!!!!!!!',mass_dict)
-    # ADD HERE
-    if chosen_pet:
-        tmp = pet_stage_calculate(chosen_pet[0])
-        if not tmp:
-            return redirect('calc:index')
-        else:
-            pet_stage, weight = tmp
-
-
-            rec_nutr = RecommendedNutrientLevelsDM.objects.filter(pet_stage__id=pet_stage.id)
-            recommended ={}
-            for nutr in rec_nutr.iterator():
-                recommended[nutr.nutrient_name] = nutr.nutrient_amount
-
-
+        columns = NutrientsName.objects.filter(is_published=True).order_by('order')
+    
+        # Dry_matter
+        total_mass = mass_dict[0]
+        total_water = totals['Water']
+        on_dry_matter = {}
+        for nutr in totals:
+            if nutr != 'Water' and nutr != 'Energy':
+                on_dry_matter[nutr] = round(100*totals[nutr]/(total_mass-total_water),2)
+        if chosen_pet:
+            on_dry_matter['Energy'] = totals['Energy']
+    
+    # context
     context = {"form": form, "showfood": foodlist, "mass_dict": mass_dict, 'pet_list': pet_list}
     if chosen_food:
         context |= {
@@ -173,14 +204,26 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
             'columns': columns,
             'items': nutrients,
             'items_name': items_name,
-            'totals': totals
+            'totals': totals,
+            'on_dry_matter': on_dry_matter
                    }
     if chosen_pet:
         context |= {
+            'pet_stage': pet_stage_info,
             'chosen_pet': chosen_pet[0],
             'recommended_nutr': recommended,
         }
 
+    if 'make_file' in request.POST.keys():
+            path  = Path(__file__).resolve().parent.parent
+            print(type(path))
+            base_dir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            filename = chosen_pet[0].name+'_'+str(datetime.datetime.now().date())
+            file_path = base_dir+'/files/'+filename+'.txt'
+            print('time to make file!')
+            with open(file_path,'w') as file:
+                pprint.pp(context,file)
+    
     return render(request, template, context)
 
 
@@ -207,6 +250,10 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
             if str(nutrient_id) in request.POST.keys():
                 mass = int(request.POST[str(nutrient_id)])
                 mass_dict[nutrient_id] = mass
+        
+
+
+
 
     template = 'calc/func.html'
     nutrient_list = NutrientsName.objects.filter(is_published=True).exclude(id__in=chosen_nutrients)
@@ -269,15 +316,12 @@ def recnutrlvl(request):
     nutrients_name = NutrientsName.objects.exclude(name='Water').filter(is_published=True).order_by('order')
     nutrient_dict = {}
 
-
     for stage in pet_stages:
-        print('!!!!!!!!!!!!!!!!!!!!',stage)
-        nutrient_dict[stage.pet_type.title]= {}
-        nutrient_dict[stage.pet_type.title][stage.pet_stage] = {}
-        object = nutrients.filter(pet_stage=stage)
+        nutrient_dict[stage.pet_stage]= {}
+        object = nutrients.filter(pet_stage=stage.id)
         for obj in object:
-            nutrient_dict[stage.pet_type.title][stage.pet_stage][obj.nutrient_name] = obj.nutrient_amount
-        pprint.pp(nutrient_dict)
+            nutrient_dict[stage.pet_stage][obj.nutrient_name] = obj.nutrient_amount
+        
     context = {
         'pet_stages': pet_stages,
         'nutrient_dict': nutrient_dict,

@@ -84,6 +84,7 @@ calc_nutr_list = []
 calc_nutr = {}
 unit_calc_nutr = {}
 povtor_list = []
+energy_added = set()
 
 files = [
     ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods'),
@@ -98,7 +99,7 @@ for file_info in files:
         data = json.load(file)
         data = data[file_info[1]]
 
-    for i in range(1, len(data)):  # all data - len(data)
+    for i in range(1, 30):  # all data - len(data)
 
         # calc nutr for previous food
         if calc_nutr:
@@ -117,7 +118,7 @@ for file_info in files:
 
 
         if data[i]['description'] in food_added:
-            print('food was added before', num_povtor, data[i]['description'])
+     #       print('food was added before', num_povtor, data[i]['description'])
             povtor_list.append(data[i]['description'])
             num_povtor += 1
         else:
@@ -190,11 +191,34 @@ for file_info in files:
                     current_nutr['fields'] = {}
                     current_nutr['fields']['food'] = food_pk
                     current_nutr['fields']['nutrient'] = nutrients_dict[name]
-                    if data[i]['foodNutrients'][j].get('amount') is not None:
-                        current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['amount']
+
+                    if name != 'Energy':
+                        # if (data[i]['description'] == 'Pillsbury, Cinnamon Rolls with Icing, refrigerated dough'):
+                        #     print('!!!!!!!!!!!!!!!!!!!!',name,data[i]['foodNutrients'][j]['nutrient']['unitName'],data[i]['foodNutrients'][j].get('amount'))
+                        if data[i]['foodNutrients'][j].get('amount') is not None:
+                            current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['amount']
+                        else:
+                            current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['median']
+                        nutrients.append(current_nutr)   
+
                     else:
-                        current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['median']
-                    nutrients.append(current_nutr)
+                        if data[i]['foodNutrients'][j]['nutrient']['unitName'] == 'kcal' and data[i]['description'] not in energy_added:
+                            if data[i]['foodNutrients'][j].get('amount') is not None:
+                                current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['amount']
+                            else:
+                                current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['median']
+                            nutrients.append(current_nutr)
+                            energy_added.add(data[i]['description'])
+
+                        elif data[i]['foodNutrients'][j]['nutrient']['unitName'] == 'kJ' and data[i]['description'] not in energy_added:
+                            if data[i]['foodNutrients'][j].get('amount') is not None:                        
+                                current_nutr['fields']['amount'] = round(data[i]['foodNutrients'][j]['amount']/1000*239,2)
+                            else:
+                                current_nutr['fields']['amount'] = round(data[i]['foodNutrients'][j]['median']/1000*239,2)
+                            energy_added.add(data[i]['description'])
+                            nutrients.append(current_nutr)
+
+
 
 
                     # CALCULATING NUTRIENTS
@@ -202,7 +226,6 @@ for file_info in files:
                         calc_name = calculated[name]
                         calc_nutr[calc_name] = calc_nutr.get(calc_name,0) + data[i]['foodNutrients'][j]['amount']
                         
-
     # словарь нутриентов
     # nutrients_count = {}
     # for nutrient in nutrients_added:
@@ -215,15 +238,29 @@ for file_info in files:
     #     print('max_foodcat_len:', max_foodcat_len)
             print('\n\n\n')
 
+    print('energy', len(energy_added))
+    print('food', len(food_added))
+
 #pprint.pp(nutrients_dict)
 
 #read recommendednutrientlevels
 
-files = ['dog.txt', 'cat.txt']
+files = ['dog_new.txt', 'cat_new.txt']
 pk = 1
 seq_of_data = {
-    'dog': ['adult_sterilized', 'adult', 'early_growth', 'late_growth', 'reproduction'],
-    'cat': ['adult_sterilized', 'adult', 'growth', 'reproduction'],
+    'dog': [['adult_sterilized', 'Собака, взрослая стрерилизованная'],
+            ['adult', 'Собака, взрослая'],
+            ['early_growth', 'Щенок, ранняя стадия роста'],
+            ['reproduction', 'Собака, кормящяя или беременная'],
+            ['late_growth', 'Щенок, поздняя стадия роста']],
+    'cat': [['adult_sterilized', 'Кошка, взростая стерилизованная'],
+            ['adult', 'Кошка, взрослая'],
+            ['growth', 'Котенок'],
+            ['reproduction', 'Кошка, кормящяя или беременная']],
+}
+description = {
+    'dog': 'собака',
+    'cat': 'кошка'
 }
 recommendednutrientlevels = []
 
@@ -239,7 +276,7 @@ for type in seq_of_data:
     animal_pk += 1
     animal_type['fields'] = {}
     animal_type['fields']['title'] = type
-    animal_type['fields']['description'] = ''
+    animal_type['fields']['description'] = description[type]
     animal_types.append(animal_type)
 
 # pet_stages
@@ -247,7 +284,7 @@ pet_stage_pk = 1
 pet_stage_dict = {}
 pet_stages = []
 for type_animal in seq_of_data:
-    for stage in seq_of_data[type_animal]:
+    for stage, description in seq_of_data[type_animal]:
         pet_stage = {}
         pet_stage['model'] = 'calc.petstage'
         pet_stage['pk'] = pet_stage_pk
@@ -256,7 +293,6 @@ for type_animal in seq_of_data:
         pet_stage['fields'] = {}
         pet_stage['fields']['pet_type'] = animal_type_dict[type_animal]
         
-        print(stage)
         if 'sterilized' in stage:
             pet_stage['fields']['sterilized'] = True
 
@@ -281,17 +317,18 @@ for type_animal in seq_of_data:
         pet_stage['fields']['age_start'] = age_start
         pet_stage['fields']['age_finish'] = age_finish
 
-        pet_stage['fields']['pet_stage'] = stage
+        pet_stage['fields']['pet_stage'] = type_animal + '_' + stage
+        pet_stage['fields']['description'] = description
         pet_stages.append(pet_stage)
 
 # pprint.pp(pet_stage_dict)
 # pprint.pp(pet_stages)
 
 for file in files:
-    if file == 'dog.txt':
+    if file == 'dog_new.txt':
         pet_type = 'dog'
         seq = seq_of_data['dog']
-    elif file == 'cat.txt':
+    elif file == 'cat_new.txt':
         pet_type = 'cat'
         seq = seq_of_data['cat']
 
@@ -300,7 +337,6 @@ for file in files:
         for line in input.readlines():
             nutrient, data = line.split('/')
             data = data.split()
-            data.append(data[-1])
 
             for index, d in enumerate(data):
                 nutr = {}
@@ -309,7 +345,7 @@ for file in files:
                 pk += 1
                 nutr['fields'] = {}
                 nutr['fields']['pet_type'] = animal_type_dict[pet_type]
-                nutr['fields']['pet_stage'] = pet_stage_dict[pet_type+'_'+seq[index]]
+                nutr['fields']['pet_stage'] = pet_stage_dict[pet_type+'_'+seq[index][0]]
                 nutr['fields']['nutrient_amount'] = float(d)
                 if nutrients_dict.get(nutrient) is None:
                     nutr_name = {}
@@ -335,7 +371,7 @@ for file in files:
 output = nutr_name_list + food + nutrients +\
      animal_types + pet_stages + recommendednutrientlevels
 
-with open('all_data.json', 'w') as file:
+with open('small_data.json', 'w') as file:
     json.dump(output, file)
 
-pprint.pp(povtor_list)
+# pprint.pp(povtor_list)

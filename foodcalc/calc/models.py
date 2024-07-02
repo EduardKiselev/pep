@@ -73,6 +73,7 @@ class Animal(models.Model):
 
 
 class PetStage(models.Model):
+    description = models.CharField(verbose_name='Описание стадии', max_length=50)
     pet_type = models.ForeignKey(AnimalType, on_delete=models.CASCADE, verbose_name='тип питомца')
     pet_stage = models.CharField(verbose_name='Стадия питомца', max_length=50)
     sterilized = models.BooleanField(verbose_name='питомец стерилизован?')

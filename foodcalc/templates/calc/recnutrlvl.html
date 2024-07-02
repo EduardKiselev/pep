@@ -14,7 +14,7 @@
         <tr>
           <th> Nutrient </th>
           {% for stage in pet_stages %}
-            <th> <p>{{stage.pet_type}}</p>-{{stage.pet_stage}}- </th>
+            <th> {{stage.description}} </th>
           {% endfor %}
         </tr>
       </thead>
@@ -24,17 +24,13 @@
         <th>
             {{nutr_name.name}}, {{nutr_name.unit_name}}
         </th>
-        {% for type in stage.pet_type %}
-        {% for stage in pet_stages %}
-
-          {{nutrient_dict|dict_key:type}}
-            {% with nutr_list=nutrient_dict|dict_key:stage.pet_stage|dict_key:type %}
+        {% for pet_stage in pet_stages %}
+            {% with nutr_list=nutrient_dict|dict_key:pet_stage.pet_stage %}
             <td style="text-align: center; vertical-align: middle;">
-            {{nutr_list|dict_key:nutr_name}}  
+            {{nutr_list|dict_key:nutr_name}} 
             </td>
             {% endwith %}
         {% endfor %}
-        {%endfor%}
         </tr>
         {% endfor %}
       </tbody>

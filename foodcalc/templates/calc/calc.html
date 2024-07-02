@@ -50,7 +50,7 @@
     {% else %}
   <h3> Вы выбрали питомца: </h3>
     <p>Кличка: {{chosen_pet.name}} </p>
-    <p>Тип: {{chosen_pet.type}}{%if chosen_pet.nursing %}, является кормящей {% endif %}{%if chosen_pet.sterilized %}, питомец стерилизован {% endif %}</p>
+    <p>Тип: {{pet_stage.description}}</p>
     <p>Возраст: {{chosen_pet.birthday|age}} месяцев </p>
     <p>Вес: {{chosen_pet.weight}} кг</p>
 
@@ -65,66 +65,10 @@
   </div>
 </div>
 
-     {% if request.GET.food %} <p><h2> {{request.GET.food}} добавлен!</h2></p> {% endif %}
-     {% if request.GET.remove_food %} <p><h2> {{request.GET.remove_food}} убран!</h2></p> {% endif %}
+     {% if request.GET.food %} <p><h3> {{request.GET.food}} добавлен!</h3></p> {% endif %}
+     {% if request.GET.remove_food %} <p><h3> {{request.GET.remove_food}} убран!</h3></p> {% endif %}
 
     {% if items_name %}
-      {% comment %} <table>
-        <caption>
-          <h2> Калькулятор </h2>
-        </caption>
-        <thead>
-          <tr>
-            <th> Food </th>
-            <th> Mass, g </th>
-            {% for column in columns %}
-              <th> {{column.name}} </th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-        {% for row in items %}
-        <tr>
-          {% with food_instance=items_name|index:forloop.counter0 %}
-          {% with food_id=food_instance.id%}
-          <td>
-            {{food_instance.description}}
-          </td>
-          <td>
-            <form method='POST'>
-              {% csrf_token %} 
-              <label for='quan_{{food}}'> </label>
-              <input type="number" Placeholder='{{mass_dict|dict_key:food_id}}' name="mass_{{food_id}}" style="width: 70px;">
-            </form>
-          </td>
-            {% for column in columns %}
-              <td>
-              {% for elem in row%}
-                {% if elem.nutrient == column %}
-                  {% multiply elem.amount mass_dict|dict_key:food_id %}   
-                {% endif %}
-              {% endfor %} 
-              </td>
-            {% endfor %}
-          {% endwith %}
-          {% endwith %}
-        </tr>   
-        {% endfor %}
-        <td>
-        </td>
-        <th>
-          TOTALS
-        </th>
-          {% for column in columns%}
-            <th>
-              {% if totals|dict_key:column.name%}
-                {{totals|dict_key:column.name}}
-              {% endif %}
-            </th>
-          {% endfor %}
-
-        </tbody>
-      </table> {% endcomment %}
       <table>
       <caption>
         <h2> Калькулятор </h2>
@@ -134,16 +78,11 @@
           <th> Food </th>
           {% for item in items_name%}
 
-          <th> --{{item.description}}-- </th>
+          <td> --{{item.description}}-- </td>
           {% endfor %}
-        <th>
-          TOTALS
-        </th>
-        {% if chosen_pet %}
-        <th>
-          Recommended
-        </th>
-        {% endif %}
+        <td> TOTALS </td>
+        <th> Unit per 100 g dry matter </th>   
+        {% if chosen_pet %}<td> Recommended </td> {% endif %}
         </tr>
       </thead>  
       <tbody>    
@@ -151,14 +90,14 @@
             <th> Mass </th>
             {% for item in items_name%}
             <td>
-            <form method='POST'>
+            <form method='POST' >
               {% csrf_token %} 
               <label for='quan_{{food}}'> </label>
               <input type="number" Placeholder='{{mass_dict|dict_key:item.id}}' name="mass_{{item.id}}" style="width: 100px;">
             </form>
             </td>       
             {% endfor %}
-            <td>
+            <td style="text-align: center; vertical-align: middle;">
             {{ mass_dict|dict_key:0 }}   
             </td>
         </tr>
@@ -168,7 +107,7 @@
          {{nutrient_name.name}}, {{nutrient_name.unit_name}}
           </td>
         {% for item in items_name%}
-        <td>
+        <td style="text-align: center; vertical-align: middle;">
           {% for food in items%}
            {% for elem in food%} 
           {% if elem.nutrient == nutrient_name and item == elem.food %}      
@@ -178,13 +117,19 @@
             {% endfor %}
         </td>
           {% endfor %}
-          <th>
-            {% if totals|dict_key:nutrient_name.name%}
-              {{totals|dict_key:nutrient_name.name}}
+          <td style="text-align: center; vertical-align: middle;">
+            {% if totals|dict_key:nutrient_name.name %}
+              {{totals|dict_key:nutrient_name.name }}
             {% endif %}
+          </td>
+          <th style="text-align: center; vertical-align: middle;">
+            
+            {% if on_dry_matter|dict_key:nutrient_name.name %}
+              {{on_dry_matter|dict_key:nutrient_name.name }}
+            {% endif %} 
           </th>
           {% if chosen_pet %}
-          <td>
+          <td style="text-align: center; vertical-align: middle;">
             {{recommended_nutr|dict_key:nutrient_name}}
           </td>
           {% endif %}
@@ -194,5 +139,10 @@
       </tbody>
     </table>
     {% endif %}
-
+    {% if chosen_pet and items_name %}
+    <form method='POST'>
+      {% csrf_token %} 
+      <button name = "make_file" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">создать файл</a></button>
+    </form>
+    {% endif %}
 {% endblock %}
