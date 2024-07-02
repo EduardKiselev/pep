@@ -4,6 +4,8 @@
 {% load get_type%}
 {% load dict_key%}
 {% load age %}
+{% load django_bootstrap5 %}
+
 
 {% block title %}
   Калькулятор
@@ -69,31 +71,32 @@
      {% if request.GET.remove_food %} <p><h3> {{request.GET.remove_food}} убран!</h3></p> {% endif %}
 
     {% if items_name %}
-      <table>
+
+      <table class="table  table-sm table-striped table-hover">
       <caption>
-        <h2> Калькулятор </h2>
+ 
       </caption>
-      <thead>
+      <thead class="table-light">
         <tr>
-          <th> Food </th>
+          <th > </th>
           {% for item in items_name%}
 
-          <td> --{{item.description}}-- </td>
+          <td scope="col"> {{item.description}} </td>
           {% endfor %}
-        <td> TOTALS </td>
-        <th> Unit per 100 g dry matter </th>   
+        <td >  TOTALS </td>
+        <td class='table-primary'> Unit per 100 g dry matter </td>   
         {% if chosen_pet %}<td> Recommended </td> {% endif %}
         </tr>
       </thead>  
       <tbody>    
         <tr>
-            <th> Mass </th>
+            <th> Amount, g </th>
             {% for item in items_name%}
-            <td>
+            <td style="text-align: center; vertical-align: middle;">
             <form method='POST' >
               {% csrf_token %} 
               <label for='quan_{{food}}'> </label>
-              <input type="number" Placeholder='{{mass_dict|dict_key:item.id}}' name="mass_{{item.id}}" style="width: 100px;">
+              <input type="number" Placeholder='{{mass_dict|dict_key:item.id}}' name="mass_{{item.id}}" style="width: 60px;">
             </form>
             </td>       
             {% endfor %}
@@ -125,7 +128,12 @@
           <th style="text-align: center; vertical-align: middle;">
             
             {% if on_dry_matter|dict_key:nutrient_name.name %}
-              {{on_dry_matter|dict_key:nutrient_name.name }}
+             {% if on_dry_matter|dict_key:nutrient_name.name > recommended_nutr|dict_key:nutrient_name %}
+              <font size="3" color="green">{{on_dry_matter|dict_key:nutrient_name.name }}</font>
+              {% else %}
+              <font size="3" color="red">{{on_dry_matter|dict_key:nutrient_name.name }}</font>
+              {% endif %}
+              
             {% endif %} 
           </th>
           {% if chosen_pet %}

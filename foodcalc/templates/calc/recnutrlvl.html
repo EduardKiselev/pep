@@ -6,7 +6,7 @@
 
 
 {% block content %}
-<table >
+<table class="table  table-sm table-striped table-hover">
     <caption>
         <h2> Таблица рекомендованных нутриентов </h2>
       </caption>
@@ -21,9 +21,9 @@
       <tbody>
         {% for nutr_name in nutrients_name %}
         <tr>
-        <th>
+        <td scope="col">
             {{nutr_name.name}}, {{nutr_name.unit_name}}
-        </th>
+        </td>
         {% for pet_stage in pet_stages %}
             {% with nutr_list=nutrient_dict|dict_key:pet_stage.pet_stage %}
             <td style="text-align: center; vertical-align: middle;">

@@ -1,6 +1,8 @@
 import json
 import pprint
 
+
+
 good_nutrients = [
     'Water',
     'Energy',
@@ -38,7 +40,7 @@ good_nutrients = [
     'Vitamin A, IU',
     'Vitamin D3 (cholecalciferol)',
     'Vitamin E (alpha-tocopherol)',
-    'Thiamine',  # B1
+    'Thiamin',  # B1
     'Riboflavin',  # B2
     'Pantothenic acid',  # B5
     'Vitamin B-6',
@@ -99,7 +101,7 @@ for file_info in files:
         data = json.load(file)
         data = data[file_info[1]]
 
-    for i in range(1, len(data)):  # all data - len(data)
+    for i in range(1, 30):  # all data - len(data)
 
         # calc nutr for previous food
         if calc_nutr:
@@ -147,7 +149,7 @@ for file_info in files:
                     name = data[i]['foodNutrients'][j]['nutrient']['name']
                     # CHANGING NAMES
                     if name == 'PUFA 18:2 n-6 c,c': name = 'Linoleic acid (omega-6)'
-                    if name == 'PUFA 20:4 n-6': name = 'Arachidonic acid (omega-6)'
+                    if name == 'PUFA 20:4': name = 'Arachidonic acid (omega-6)'
                     if name == 'PUFA 18:3 n-3 c,c,c (ALA)': name = 'Alpha-linolenic acid (omega-3)'
 
                     if name not in nutrients_added:
@@ -371,6 +373,6 @@ for file in files:
 output = nutr_name_list + food + nutrients +\
      animal_types + pet_stages + recommendednutrientlevels
 
-with open('all_data.json', 'w') as file:
+with open('small_data.json', 'w') as file:
     json.dump(output, file)
 

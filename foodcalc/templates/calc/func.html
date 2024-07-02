@@ -36,6 +36,7 @@
 
       {% if request.GET.nutr_add %} <p><h2> {{request.GET.nutr_add}} добавлен!</h2></p> {% endif %}
       {% if request.GET.remove_nutr %} <p><h2> {{request.GET.remove_nutr}} убран!</h2></p> {% endif %}
+      <p> </p>
       {% for nutr in delete_list%}
         <p> {{nutr.name}}
           <form method='POST'>
@@ -47,10 +48,7 @@
     </div>
     <div class='col-md-7'>
       {% if delete_list %}
-      <table>
-        <caption>
-          <h2> FoodRating </h2>
-        </caption>
+      <table class="table  table-sm table-striped table-hover">
         <thead>
           <tr>
             <th> Food </th>
@@ -64,7 +62,7 @@
         {% for food,rate in page_obj %}
         <tr>
         <th>
-           <a class="btn btn-sm text-muted" href="{% url 'calc:food_detail' food.id %}" role="button"> 
+           <a class="btn btn-sm " href="{% url 'calc:food_detail' food.id %}" role="button"> 
          {{food.description}}
         </th>
         <th style="text-align: center; vertical-align: middle;">

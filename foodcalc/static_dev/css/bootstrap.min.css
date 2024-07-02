@@ -305,9 +305,11 @@ svg {
     vertical-align: middle
 }
 
-table {
+table, th, td {
+
     caption-side: bottom;
-    border-collapse: collapse
+    border-collapse: collapse;
+    /* border: 1px solid; */
 }
 
 caption {
@@ -330,7 +332,8 @@ thead,
 tr {
     border-color: inherit;
     border-style: solid;
-    border-width: 0
+    border-width: 1;
+  /* #  border: 1px solid; */
 }
 
 label {
@@ -2005,7 +2008,7 @@ progress {
     margin-bottom: 1rem;
     color: #212529;
     vertical-align: top;
-    border-color: #dee2e6
+    border-color: #1b61a7
 }
 
 .table>:not(caption)>*>* {

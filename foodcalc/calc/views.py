@@ -153,7 +153,7 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
             for nutr in rec_nutr.iterator():
                 recommended[nutr.nutrient_name] = nutr.nutrient_amount
                 if nutr.nutrient_name.name == 'Energy':
-                    recommended[nutr.nutrient_name] = str(round(get_object_or_404(rec_nutr,nutrient_name__name='Energy').nutrient_amount*(weight)**(0.75),2))+'kcal'
+                    recommended[nutr.nutrient_name] = round(get_object_or_404(rec_nutr,nutrient_name__name='Energy').nutrient_amount*(weight)**(0.75),2)
                 if nutr.nutrient_name.name == 'Water':
                     recommended[nutr.nutrient_name] = ' '
 
