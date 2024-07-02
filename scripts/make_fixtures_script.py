@@ -87,10 +87,10 @@ povtor_list = []
 energy_added = set()
 
 files = [
-    ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods'),
     ('FoodData_Central_sr_legacy_food_json_2021-10-28.json', 'SRLegacyFoods'),
+    ('foundationDownload.json', 'FoundationFoods'),   
+    ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods'),
     ('FoodData_Central_foundation_food_json_2022-10-28.json', 'FoundationFoods'),
-    ('foundationDownload.json', 'FoundationFoods'),
          ]
 
 for file_info in files:
@@ -99,7 +99,7 @@ for file_info in files:
         data = json.load(file)
         data = data[file_info[1]]
 
-    for i in range(1, 30):  # all data - len(data)
+    for i in range(1, len(data)):  # all data - len(data)
 
         # calc nutr for previous food
         if calc_nutr:
@@ -371,7 +371,6 @@ for file in files:
 output = nutr_name_list + food + nutrients +\
      animal_types + pet_stages + recommendednutrientlevels
 
-with open('small_data.json', 'w') as file:
+with open('all_data.json', 'w') as file:
     json.dump(output, file)
 
-# pprint.pp(povtor_list)
