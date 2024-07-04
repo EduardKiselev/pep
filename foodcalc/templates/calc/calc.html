@@ -4,8 +4,6 @@
 {% load get_type%}
 {% load dict_key%}
 {% load age %}
-{% load django_bootstrap5 %}
-
 
 {% block title %}
   Калькулятор
@@ -152,5 +150,13 @@
       {% csrf_token %} 
       <button name = "make_file" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">создать файл</a></button>
     </form>
+
+    <form method='POST'>
+      {% csrf_token %}
+      <input type="text" name="ration_name" Placeholder="Название рациона" class="form-control" style="width:200px;">
+      <button type="submit" name='pet_reset' class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Сохранить рацион</a></button>
+      
+    </form>
+
     {% endif %}
 {% endblock %}

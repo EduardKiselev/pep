@@ -1,5 +1,5 @@
 Energy/ 75 100 175 175 kcal
-Protein/ 33.30 25.00 28.00 30.00 g
+Protein/ 33.30 25.00 28.00 30 g
 Arginine/ 1.30 1.00 1.07 1.11 g
 Histidine/ 0.35 0.26 0.33 0.33 g
 Isoleucine/ 0.57 0.43 0.54 0.54 g
@@ -24,16 +24,16 @@ Potassium, K/ 0.80 0.60 0.60 0.60 g
 Sodium, Na/ 0.10 0.08 0.16 0.16 g
 Chloride/ 0.15 0.11 0.24 0.24 g
 Magnesium, Mg/ 0.05 0.04 0.05 0.05 g
-Copper, Cu/ 0.67 0.50 1.00 1.00 g
-Iodine, I/ 0.17 0.13 0.18 0.18 g
-Iron, Fe/ 10.70 8.00 8.00 8.00 g
-Manganese, Mn/ 0.67 0.50 1.00 1.00 g
-Selenium, Se/ 35.00 26.00 30.00 30.00 g
-Zinc, Zn/ 10.00 7.50 7.50 7.50 g
+Copper, Cu/ 0.67 0.50 1.00 1.00 mg
+Iodine, I/ 0.17 0.13 0.18 0.18 mg
+Iron, Fe/ 10.70 8.00 8.00 8.00 mg
+Manganese, Mn/ 0.67 0.50 1.00 1.00 mg
+Selenium, Se/ 35.00 26.00 30.00 30.00 mug
+Zinc, Zn/ 10.00 7.50 7.50 7.50 mg
 Vitamin A/ 444.00 333.00 900.00 900.00 IU
 Vitamin D3 (cholecalciferol)/ 33.30 25.00 28.00 28.00 IU
 Vitamin E (alpha-tocopherol)/ 5.07 3.80 3.80 3.80 IU
-Thiamine/ 0.59 0.44 0.55 0.55 mg
+Thiamin/ 0.59 0.44 0.55 0.55 mg
 Riboflavin/ 0.42 0.32 0.32 0.32 mg
 Pantothenic acid/ 0.77 0.58 0.57 0.57 mg
 Vitamin B-6/ 0.33 0.25 0.25 0.25 mg

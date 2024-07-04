@@ -51,8 +51,8 @@ class NutrientsQuantity(models.Model):
 
 
 class AnimalType(models.Model):
-    title = models.CharField(blank=True, max_length=50)
-    description = models.TextField(blank=True, verbose_name='Описание')
+    title = models.CharField(max_length=50)
+    description = models.TextField(verbose_name='Описание')
 
     def __str__(self):
         return self.title
@@ -95,3 +95,18 @@ class RecommendedNutrientLevelsDM(models.Model):
 
     def __str__(self):
         return str(self.pet_stage) + ' ' + str(self.nutrient_name)
+
+
+class Rations(models.Model):
+    pet_name = models.CharField(verbose_name='Имя питомца', max_length=50)
+    pet_info = models.ForeignKey(PetStage, on_delete=models.CASCADE)
+    ration_name = models.CharField(verbose_name='Название рациона', max_length=50)
+    ration_comment = models.TextField(verbose_name='комментарий', blank=True)
+
+
+class FoodData(models.Model):
+    ration_id = models.ForeignKey(Rations, on_delete=models.CASCADE,
+                                related_name='ration')
+    food_name = models.ForeignKey(Food, on_delete=models.CASCADE,
+                                related_name='food')
+    weight = models.IntegerField()

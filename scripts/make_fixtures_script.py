@@ -37,7 +37,7 @@ good_nutrients = [
     'Manganese, Mn',
     'Selenium, Se',
     'Zinc, Zn',
-    'Vitamin A, IU',
+    'Vitamin A',
     'Vitamin D3 (cholecalciferol)',
     'Vitamin E (alpha-tocopherol)',
     'Thiamin',  # B1
@@ -87,12 +87,14 @@ calc_nutr = {}
 unit_calc_nutr = {}
 povtor_list = []
 energy_added = set()
+unit_name_in_DB_dict = {}
+
 
 files = [
-    ('FoodData_Central_sr_legacy_food_json_2021-10-28.json', 'SRLegacyFoods'),
-    ('foundationDownload.json', 'FoundationFoods'),   
-    ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods'),
-    ('FoodData_Central_foundation_food_json_2022-10-28.json', 'FoundationFoods'),
+    ('FoodData_Central_sr_legacy_food_json_2021-10-28.json', 'SRLegacyFoods', 'legasy'),
+    ('foundationDownload.json', 'FoundationFoods', 'foundation1'),   
+    ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods', 'survey'),
+    ('FoodData_Central_foundation_food_json_2022-10-28.json', 'FoundationFoods', 'foundation2'),
          ]
 
 for file_info in files:
@@ -120,134 +122,140 @@ for file_info in files:
 
 
         if data[i]['description'] in food_added:
+
      #       print('food was added before', num_povtor, data[i]['description'])
             povtor_list.append(data[i]['description'])
             num_povtor += 1
+            descr = data[i]['description'] + '_' + file_info[2]
         else:
+            descr = data[i]['description']
             food_added.add(data[i]['description'])
-            current = {}
-            current['model'] = 'calc.food'
-            food_pk += 1
-            current['pk'] = food_pk
-            current['fields'] = {
-                "description": data[i]['description'],
-                "ndbNumber": data[i].get('ndbNumber',0),
-                "fdcId": data[i]['fdcId'],
-          #     "foodCategory": data[i]['foodCategory']["description"],
-            }
-            max_food_len = max(max_food_len, len(data[i]['description']))
-         #   max_foodcat_len = max(max_foodcat_len, len(data[i]['foodCategory']["description"]))
-            food.append(current)
 
-            
+        current = {}
+        current['model'] = 'calc.food'
+        food_pk += 1
+        current['pk'] = food_pk
+        current['fields'] = {
+            "description": descr,
+            "ndbNumber": data[i].get('ndbNumber',0),
+            "fdcId": data[i]['fdcId'],
+        #     "foodCategory": data[i]['foodCategory']["description"],
+        }
 
-            calc_nutr = {}
-            for j in range(len(data[i]['foodNutrients'])):  # это список нутриентов i-ой еды
+        food.append(current)
 
-                if data[i]['foodNutrients'][j].get('amount') is not None or data[i]['foodNutrients'][j].get('median') is not None:
+        
 
-                    name = data[i]['foodNutrients'][j]['nutrient']['name']
-                    # CHANGING NAMES
-                    if name == 'PUFA 18:2 n-6 c,c': name = 'Linoleic acid (omega-6)'
-                    if name == 'PUFA 20:4': name = 'Arachidonic acid (omega-6)'
-                    if name == 'PUFA 18:3 n-3 c,c,c (ALA)': name = 'Alpha-linolenic acid (omega-3)'
+        calc_nutr = {}
+        for j in range(len(data[i]['foodNutrients'])):  # это список нутриентов i-ой еды
 
-                    if name not in nutrients_added:
-                        nutrients_added.add(name)
-                        # for nutrinents Name and measure
-                        nutr_name = {}
-                        nutr_name['model'] = 'calc.nutrientsname'
-                        nutr_name['pk'] = nutr_name_pk
-                        nutrients_dict[name] = nutr_name_pk
-                        nutr_name_pk += 1
-                        nutr_name['fields'] = {}
-                        nutr_name['fields']['name'] = name  # создание БД имен
-                        nutr_name['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName']
-                        if name in good_nutrients:
-                            nutr_name['fields']['is_published'] = 1
-                            nutr_name['fields']['order'] = nutrients_order[name]
-                        else:
-                            nutr_name['fields']['is_published'] = 0
-                        nutr_name_list.append(nutr_name)
+            if data[i]['foodNutrients'][j].get('amount') is not None or data[i]['foodNutrients'][j].get('median') is not None:
 
-                        if name in calculated:
-                            calc_name = calculated[name]
-                            if nutrients_dict.get(calc_name) is None:
-                                nutr_name = {}
-                                nutr_name['model'] = 'calc.nutrientsname'
-                                nutr_name['pk'] = nutr_name_pk
-                                nutrients_dict[calc_name] = nutr_name_pk
-                                nutr_name_pk += 1
-                                nutr_name['fields'] = {}
-                                nutr_name['fields']['name'] = calc_name  # создание БД имен
-                                nutr_name['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName']  
-                                nutr_name['fields']['is_published'] = 1
-                                nutr_name['fields']['order'] = nutrients_order[calc_name]
-                                nutr_name_list.append(nutr_name)
+                name = data[i]['foodNutrients'][j]['nutrient']['name']
+                # CHANGING NAMES
+                if name == 'Vitamin A, IU': name = 'Vitamin A'
+                if name == 'PUFA 18:2 n-6 c,c': name = 'Linoleic acid (omega-6)'
+                if name == 'PUFA 20:4': name = 'Arachidonic acid (omega-6)'
+                if name == 'PUFA 18:3 n-3 c,c,c (ALA)': name = 'Alpha-linolenic acid (omega-3)'
 
-                    # for nutrinents_quantity
-                    current_nutr = {}
-                    current_nutr['model'] = 'calc.nutrientsquantity'
-                    current_nutr['pk'] = curr_nurt_quantity_pk
-                    curr_nurt_quantity_pk += 1
-                    current_nutr['fields'] = {}
-                    current_nutr['fields']['food'] = food_pk
-                    current_nutr['fields']['nutrient'] = nutrients_dict[name]
-
+                if name not in nutrients_added:
+                    nutrients_added.add(name)
+                    # for nutrinents Name and measure
+                    nutr_name = {}
+                    nutr_name['model'] = 'calc.nutrientsname'
+                    nutr_name['pk'] = nutr_name_pk
+                    nutrients_dict[name] = nutr_name_pk
+                    nutr_name_pk += 1
+                    nutr_name['fields'] = {}
+                    nutr_name['fields']['name'] = name  # создание БД имен
                     if name != 'Energy':
-                        # if (data[i]['description'] == 'Pillsbury, Cinnamon Rolls with Icing, refrigerated dough'):
-                        #     print('!!!!!!!!!!!!!!!!!!!!',name,data[i]['foodNutrients'][j]['nutrient']['unitName'],data[i]['foodNutrients'][j].get('amount'))
+                        nutr_name['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName']
+                    else:
+                        nutr_name['fields']['unit_name'] = 'kcal'
+                    unit_name_in_DB_dict[name] = nutr_name['fields']['unit_name']
+
+                    if name in good_nutrients:
+                        nutr_name['fields']['is_published'] = 1
+                        nutr_name['fields']['order'] = nutrients_order[name]
+                    else:
+                        nutr_name['fields']['is_published'] = 0
+                    nutr_name_list.append(nutr_name)
+
+                    if name in calculated:
+                        calc_name = calculated[name]
+                        if nutrients_dict.get(calc_name) is None:
+                            nutr_name = {}
+                            nutr_name['model'] = 'calc.nutrientsname'
+                            nutr_name['pk'] = nutr_name_pk
+                            nutrients_dict[calc_name] = nutr_name_pk
+                            nutr_name_pk += 1
+                            nutr_name['fields'] = {}
+                            nutr_name['fields']['name'] = calc_name  # создание БД имен
+                            nutr_name['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName'] 
+                            unit_name_in_DB_dict[calc_name] = nutr_name['fields']['unit_name']
+                            nutr_name['fields']['is_published'] = 1
+                            nutr_name['fields']['order'] = nutrients_order[calc_name]
+                            nutr_name_list.append(nutr_name)
+
+                # for nutrinents_quantity
+                current_nutr = {}
+                current_nutr['model'] = 'calc.nutrientsquantity'
+                current_nutr['pk'] = curr_nurt_quantity_pk
+                curr_nurt_quantity_pk += 1
+                current_nutr['fields'] = {}
+                current_nutr['fields']['food'] = food_pk
+                current_nutr['fields']['nutrient'] = nutrients_dict[name]
+
+                if name != 'Energy':
+                    # if (data[i]['description'] == 'Pillsbury, Cinnamon Rolls with Icing, refrigerated dough'):
+                    #     print('!!!!!!!!!!!!!!!!!!!!',name,data[i]['foodNutrients'][j]['nutrient']['unitName'],data[i]['foodNutrients'][j].get('amount'))
+                    if data[i]['foodNutrients'][j].get('amount') is not None:
+                        current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['amount']
+                    else:
+                        current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['median']
+                    nutrients.append(current_nutr)   
+
+                else:
+                    if data[i]['foodNutrients'][j]['nutrient']['unitName'] == 'kcal' and data[i]['description'] not in energy_added:
                         if data[i]['foodNutrients'][j].get('amount') is not None:
                             current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['amount']
                         else:
                             current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['median']
-                        nutrients.append(current_nutr)   
+                        nutrients.append(current_nutr)
+                        energy_added.add(data[i]['description'])
 
-                    else:
-                        if data[i]['foodNutrients'][j]['nutrient']['unitName'] == 'kcal' and data[i]['description'] not in energy_added:
-                            if data[i]['foodNutrients'][j].get('amount') is not None:
-                                current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['amount']
-                            else:
-                                current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['median']
-                            nutrients.append(current_nutr)
-                            energy_added.add(data[i]['description'])
-
-                        elif data[i]['foodNutrients'][j]['nutrient']['unitName'] == 'kJ' and data[i]['description'] not in energy_added:
-                            if data[i]['foodNutrients'][j].get('amount') is not None:                        
-                                current_nutr['fields']['amount'] = round(data[i]['foodNutrients'][j]['amount']/1000*239,2)
-                            else:
-                                current_nutr['fields']['amount'] = round(data[i]['foodNutrients'][j]['median']/1000*239,2)
-                            energy_added.add(data[i]['description'])
-                            nutrients.append(current_nutr)
+                    elif data[i]['foodNutrients'][j]['nutrient']['unitName'] == 'kJ' and data[i]['description'] not in energy_added:
+                        if data[i]['foodNutrients'][j].get('amount') is not None:                        
+                            current_nutr['fields']['amount'] = round(data[i]['foodNutrients'][j]['amount']/1000*239,2)
+                        else:
+                            current_nutr['fields']['amount'] = round(data[i]['foodNutrients'][j]['median']/1000*239,2)
+                        energy_added.add(data[i]['description'])
+                        nutrients.append(current_nutr)
 
 
 
 
-                    # CALCULATING NUTRIENTS
-                    if name in calculated:
-                        calc_name = calculated[name]
-                        calc_nutr[calc_name] = calc_nutr.get(calc_name,0) + data[i]['foodNutrients'][j]['amount']
+                # CALCULATING NUTRIENTS
+                if name in calculated:
+                    calc_name = calculated[name]
+                    calc_nutr[calc_name] = calc_nutr.get(calc_name,0) + data[i]['foodNutrients'][j]['amount']
                         
-    # словарь нутриентов
-    # nutrients_count = {}
-    # for nutrient in nutrients_added:
-    #     nutrients_count[nutrient] = 0
+        # printing in console process
         if len(food_added) % 500 == 0:
             print(file_info)
             print(len(food_added))
             print('nutrients_added:', len(nutrients_added))
             print('max_food_len:', max_food_len)
-    #     print('max_foodcat_len:', max_foodcat_len)
             print('\n\n\n')
-
-    print('energy', len(energy_added))
-    print('food', len(food_added))
 
 #pprint.pp(nutrients_dict)
 
 #read recommendednutrientlevels
 
-files = ['dog_new.txt', 'cat_new.txt']
+files = [
+    'cat_reformated.txt',
+    'dog_reformated.txt',
+    ]
 pk = 1
 seq_of_data = {
     'dog': [['adult_sterilized', 'Собака, взрослая стрерилизованная'],
@@ -327,10 +335,10 @@ for type_animal in seq_of_data:
 # pprint.pp(pet_stages)
 
 for file in files:
-    if file == 'dog_new.txt':
+    if 'dog' in file:
         pet_type = 'dog'
         seq = seq_of_data['dog']
-    elif file == 'cat_new.txt':
+    elif 'cat' in file:
         pet_type = 'cat'
         seq = seq_of_data['cat']
 
@@ -339,6 +347,7 @@ for file in files:
         for line in input.readlines():
             nutrient, data = line.split('/')
             data = data.split()
+            unit_name = data.pop()
 
             for index, d in enumerate(data):
                 nutr = {}
@@ -348,7 +357,7 @@ for file in files:
                 nutr['fields'] = {}
                 nutr['fields']['pet_type'] = animal_type_dict[pet_type]
                 nutr['fields']['pet_stage'] = pet_stage_dict[pet_type+'_'+seq[index][0]]
-                nutr['fields']['nutrient_amount'] = float(d)
+
                 if nutrients_dict.get(nutrient) is None:
                     nutr_name = {}
                     nutr_name['model'] = 'calc.nutrientsname'
@@ -356,19 +365,64 @@ for file in files:
                     nutrients_dict[nutrient] = nutr_name_pk
                     nutr_name_pk += 1
                     nutr_name['fields'] = {}
-                    nutr_name['fields']['name'] = nutrient 
-                    nutr_name['fields']['unit_name'] = 'unknown'
-                #    print('MAKE UNKNOWN,', nutrient, nutr_name_pk)
+                    nutr_name['fields']['name'] = nutrient
+                    if nutrient in ['Taurine', 'Chloride']:
+                        nutr_name['fields']['unit_name'] = 'g'
+                    elif nutrient in ['Biotin',]:
+                        nutr_name['fields']['unit_name'] = 'µg'
+                    else:
+                        nutr_name['fields']['unit_name'] = 'unknown'
+                        print('MAKE UNKNOWN,', nutrient, nutr_name_pk)
+                    unit_name_in_DB_dict[nutrient] = nutr_name['fields']['unit_name']
                     if nutrient in good_nutrients:
                         nutr_name['fields']['is_published'] = 1
                         nutr_name['fields']['order'] = nutrients_order[nutrient]
                     else:
                         nutr_name['fields']['is_published'] = 0
+
                     nutr_name_list.append(nutr_name)
 
                 nutr['fields']['nutrient_name'] = nutrients_dict[nutrient]
-                recommendednutrientlevels.append(nutr)
 
+                if unit_name == 'IU':
+                    if nutrient == 'Vitamin A': coef_nutr_to_gramm = 1 # here IU measure
+                    if nutrient == 'Vitamin D3 (cholecalciferol)': coef_nutr_to_gramm = 0.000000025
+                    if nutrient == 'Vitamin E (alpha-tocopherol)': coef_nutr_to_gramm = 0.00067
+                elif unit_name == 'g': coef_nutr_to_gramm = 1
+                elif unit_name == 'mg': coef_nutr_to_gramm = 1/1000
+                elif unit_name == 'mug': coef_nutr_to_gramm = 1/1000000
+                elif unit_name == 'kcal': coef_nutr_to_gramm = 1  # here kcal measure    
+
+                unit_name_in_DB = unit_name_in_DB_dict.get(nutrient, 'unknown')
+
+                coef_to_unit_in_DB=0
+                if unit_name_in_DB == 'IU':
+                    if nutrient == 'Vitamin A':
+                        coef_to_unit_in_DB = 1 # here IU measure
+                elif unit_name_in_DB == 'g': coef_to_unit_in_DB = 1
+                elif unit_name_in_DB == 'mg': coef_to_unit_in_DB = 1/1000
+                elif unit_name_in_DB == 'µg': coef_to_unit_in_DB = 1/1000000
+                elif unit_name_in_DB == 'kcal': coef_to_unit_in_DB = 1 # here kcal measure
+                elif unit_name_in_DB == 'unknown': coef_to_unit_in_DB = 1 # here unknown measure
+
+                measure = float(d)*coef_nutr_to_gramm/coef_to_unit_in_DB
+                counter = 0
+                while measure >= 1:
+                    counter -= 1
+                    measure = measure/10
+                while measure<1 and measure>0:
+                    measure = measure*10
+                    counter += 1
+                measure = measure/10**counter
+                measure = round(measure,counter+2)
+                if measure >= 100:
+                    measure = int(measure)
+                print(measure)
+
+                nutr['fields']['nutrient_amount'] = measure
+
+                recommendednutrientlevels.append(nutr)
+              #  print(pet_type+'_'+seq[index][0],nutrient,measure,unit_name_in_DB_dict[nutrient])
 
 output = nutr_name_list + food + nutrients +\
      animal_types + pet_stages + recommendednutrientlevels

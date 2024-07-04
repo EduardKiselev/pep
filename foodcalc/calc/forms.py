@@ -10,6 +10,10 @@ class FoodForm(forms.Form):
     food = forms.CharField(max_length=150)
 
 
+class RationNameForm(forms.Form):
+    ration_name = forms.CharField(max_length=50)
+
+
 class RemoveFoodForm(forms.Form):
     remove_food = forms.CharField(max_length=150)
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from calc.models import Food, NutrientsName, NutrientsQuantity, User, Animal, AnimalType, RecommendedNutrientLevelsDM, PetStage
-from calc.forms import FoodForm, RemoveFoodForm, NutrinentForm, RemoveNutrinentForm, ProfileForm, PetForm
+from calc.models import Food, NutrientsName, NutrientsQuantity, User, Animal, RecommendedNutrientLevelsDM, PetStage, Rations, FoodData
+from calc.forms import FoodForm, RemoveFoodForm, NutrinentForm, RemoveNutrinentForm, ProfileForm, PetForm, RationNameForm
 from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
@@ -86,6 +86,15 @@ class AnimalDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         return reverse_lazy('calc:profile',
                             args=(self.request.user,))
+
+
+def profile(request, username):
+    template = 'animal/profile.html'
+    profile = get_object_or_404(User, username=username)
+    animals = Animal.objects.filter(owner=profile)
+    context = {'profile': profile, 'animals': animals}
+    return render(request, template, context)
+
 
 @login_required
 def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
@@ -192,7 +201,11 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
         on_dry_matter = {}
         for nutr in totals:
             if nutr != 'Water' and nutr != 'Energy':
-                on_dry_matter[nutr] = round(100*totals[nutr]/(total_mass-total_water),2)
+                measure = round(100*totals[nutr]/(total_mass-total_water),2)
+                if measure >= 10: measure = round(measure,1)
+                if measure >= 100: measure = int(measure)
+                on_dry_matter[nutr] = measure
+        pprint.pp(on_dry_matter)
         if chosen_pet:
             on_dry_matter['Energy'] = totals['Energy']
     
@@ -223,7 +236,26 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
             print('time to make file!')
             with open(file_path,'w') as file:
                 pprint.pp(context,file)
-    
+
+    if 'ration_name' in request.POST.keys():
+        form = RationNameForm(request.POST or None)
+        if form.is_valid():
+            instance = Rations.objects.create(pet_name=chosen_pet[0].name,pet_info=pet_stage,ration_name=request.POST['ration_name'])
+            ration_id = instance
+            print(mass_dict)
+            print(chosen_food)
+            food_instance = Food.objects.filter(id__in=chosen_food)
+            foods = (FoodData(ration_id=ration_id,food_name=food,weight=mass_dict[food.id]) for food in food_instance)
+        # data = {
+        #     'pet_stage': pet_stage_info,
+        #     'pet_name': chosen_pet[0].name
+        #     'food_weight': mass_dict
+        #     'food_list': chosen_food
+        # }
+        FoodData.objects.bulk_create(foods)
+ 
+        return redirect('calc:profile', username=request.user)
+
     return render(request, template, context)
 
 
@@ -250,10 +282,6 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
             if str(nutrient_id) in request.POST.keys():
                 mass = int(request.POST[str(nutrient_id)])
                 mass_dict[nutrient_id] = mass
-        
-
-
-
 
     template = 'calc/func.html'
     nutrient_list = NutrientsName.objects.filter(is_published=True).exclude(id__in=chosen_nutrients)
@@ -262,7 +290,7 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
     if chosen_nutrients:
         delete_list = NutrientsName.objects.filter(id__in=chosen_nutrients)
         totals = {}
-        nutrients = {} 
+        nutrients = {}
         for nutrient in chosen_nutrients:
             nutrients[nutrient] = {}
             objects = NutrientsQuantity.objects.select_related(
@@ -289,13 +317,6 @@ def index(request):
     return render(request, template)
 
 
-def profile(request, username):
-    template = 'animal/profile.html'
-    profile = get_object_or_404(User, username=username)
-    animals = Animal.objects.filter(owner=profile)
-    context = {'profile': profile, 'animals': animals}
-    return render(request, template, context)
-
 
 @login_required
 def profile_update(request):
@@ -317,11 +338,13 @@ def recnutrlvl(request):
     nutrient_dict = {}
 
     for stage in pet_stages:
-        nutrient_dict[stage.pet_stage]= {}
+        nutrient_dict[stage.pet_stage] = {}
         object = nutrients.filter(pet_stage=stage.id)
         for obj in object:
-            nutrient_dict[stage.pet_stage][obj.nutrient_name] = obj.nutrient_amount
-        
+            measure = obj.nutrient_amount
+            if measure >= 100:
+                measure = int(measure)
+            nutrient_dict[stage.pet_stage][obj.nutrient_name] = measure
     context = {
         'pet_stages': pet_stages,
         'nutrient_dict': nutrient_dict,
