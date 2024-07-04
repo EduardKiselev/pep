@@ -1,6 +1,4 @@
-import json
-import pprint
-
+import json, os, sys, pprint
 
 
 good_nutrients = [
@@ -97,13 +95,32 @@ files = [
     ('FoodData_Central_foundation_food_json_2022-10-28.json', 'FoundationFoods', 'foundation2'),
          ]
 
-for file_info in files:
+if sys.argv:
+    args = sys.argv
+    if len(args)>2:
+        raise TypeError('Too many ARGS')
+    else:
+        if args[1] == '-a':
+            flag = 'all'
+        elif args[1] == '-s':
+            flag = 'small'
+            files = [files[1]]
+        else:
+            raise ValueError('No such ARG')
+else:
+    _len=30
 
+for file_info in files:
+    print('Start file:',file_info[0])
     with open(file_info[0]) as file:
         data = json.load(file)
         data = data[file_info[1]]
+    if flag == 'all':
+        _len = len(data)
+    elif flag == 'small':
+        _len = 30
 
-    for i in range(1, 30):  # all data - len(data)
+    for i in range(1, _len):  # all data - len(data)
 
         # calc nutr for previous food
         if calc_nutr:
@@ -285,7 +302,7 @@ for type in seq_of_data:
     animal_type_dict[type] = animal_pk
     animal_pk += 1
     animal_type['fields'] = {}
-    animal_type['fields']['title'] = type
+    animal_type['fields']['title'] = description[type]
     animal_type['fields']['description'] = description[type]
     animal_types.append(animal_type)
 
@@ -417,7 +434,6 @@ for file in files:
                 measure = round(measure,counter+2)
                 if measure >= 100:
                     measure = int(measure)
-                print(measure)
 
                 nutr['fields']['nutrient_amount'] = measure
 
@@ -426,7 +442,13 @@ for file in files:
 
 output = nutr_name_list + food + nutrients +\
      animal_types + pet_stages + recommendednutrientlevels
+print('Writing Data')
+write_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/foodcalc/'
+if flag == 'small':
+    filename = 'small_data.json'
+elif flag == 'all':
+    filename = 'all_data.json'
 
-with open('small_data.json', 'w') as file:
+with open(write_dir+filename, 'w') as file:
     json.dump(output, file)
 

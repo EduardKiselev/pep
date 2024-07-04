@@ -98,6 +98,8 @@ class RecommendedNutrientLevelsDM(models.Model):
 
 
 class Rations(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE,
+                               verbose_name='Составитель рациона')
     pet_name = models.CharField(verbose_name='Имя питомца', max_length=50)
     pet_info = models.ForeignKey(PetStage, on_delete=models.CASCADE)
     ration_name = models.CharField(verbose_name='Название рациона', max_length=50)
@@ -105,7 +107,7 @@ class Rations(models.Model):
 
 
 class FoodData(models.Model):
-    ration_id = models.ForeignKey(Rations, on_delete=models.CASCADE,
+    ration = models.ForeignKey(Rations, on_delete=models.CASCADE,
                                 related_name='ration')
     food_name = models.ForeignKey(Food, on_delete=models.CASCADE,
                                 related_name='food')

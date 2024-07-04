@@ -30,5 +30,24 @@
       <a href="{% url 'calc:animal_delete' animal.id %}">Удалить</a>
     </article>
   {% endfor %}
+  <h3 class="mb-5 text-center">Составленные рационы</h3>
+  {% for ration in rations %}
+    <article class="mb-5">
+      <p><h3>{{ ration.ration_name }}</h3></p>
+      Инфо о питомце: {{ration.pet_info.description}}
+      <ul type>
+      {% for food in foods %}
+      {% if food.ration == ration %}
+      <li>{{food.food_name.description}}: {{food.weight}} gr</li>
+      {% endif %}
+      {% endfor %}
+      </ul>
+      <form method='GET'>
+        {% csrf_token %} 
+        <button name = "none" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Редактировать</a></button>
+      </form>
+      
+    </article>
+  {% endfor %}
 
 {% endblock %}

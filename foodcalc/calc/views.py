@@ -3,14 +3,13 @@ from calc.models import Food, NutrientsName, NutrientsQuantity, User, Animal, Re
 from calc.forms import FoodForm, RemoveFoodForm, NutrinentForm, RemoveNutrinentForm, ProfileForm, PetForm, RationNameForm
 from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django import forms
 from calc.utils import pet_stage_calculate
 import datetime
 
-from pathlib import Path
 import os
 
 import pprint
@@ -90,9 +89,20 @@ class AnimalDeleteView(LoginRequiredMixin, DeleteView):
 
 def profile(request, username):
     template = 'animal/profile.html'
+
+    if request.GET:
+        return redirect(reverse('calc:calc', kwargs={'chosen_food':[1,2]}))
+
     profile = get_object_or_404(User, username=username)
     animals = Animal.objects.filter(owner=profile)
-    context = {'profile': profile, 'animals': animals}
+    foods = FoodData.objects.select_related('ration','food_name').filter(ration__owner=profile)
+    rations_list = set()
+    rations = Rations.objects.filter(id__in=rations_list)
+    for elem in foods.values('ration'):
+        rations_list.add(elem['ration'])
+    rations = Rations.objects.filter(id__in=rations_list)
+    print(rations)
+    context = {'profile': profile, 'animals': animals,'foods':foods,'rations':rations}
     return render(request, template, context)
 
 
@@ -228,32 +238,23 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
         }
 
     if 'make_file' in request.POST.keys():
-            path  = Path(__file__).resolve().parent.parent
-            print(type(path))
-            base_dir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             filename = chosen_pet[0].name+'_'+str(datetime.datetime.now().date())
             file_path = base_dir+'/files/'+filename+'.txt'
             print('time to make file!')
-            with open(file_path,'w') as file:
-                pprint.pp(context,file)
+            with open(file_path, 'w') as file:
+                pprint.pp(context, file)
 
     if 'ration_name' in request.POST.keys():
         form = RationNameForm(request.POST or None)
         if form.is_valid():
-            instance = Rations.objects.create(pet_name=chosen_pet[0].name,pet_info=pet_stage,ration_name=request.POST['ration_name'])
-            ration_id = instance
+            ration_instance = Rations.objects.create(pet_name=chosen_pet[0].name, pet_info=pet_stage, ration_name=request.POST['ration_name'],owner=request.user)
             print(mass_dict)
             print(chosen_food)
             food_instance = Food.objects.filter(id__in=chosen_food)
-            foods = (FoodData(ration_id=ration_id,food_name=food,weight=mass_dict[food.id]) for food in food_instance)
-        # data = {
-        #     'pet_stage': pet_stage_info,
-        #     'pet_name': chosen_pet[0].name
-        #     'food_weight': mass_dict
-        #     'food_list': chosen_food
-        # }
+            foods = (FoodData(ration=ration_instance, food_name=food, weight=mass_dict[food.id]) for food in food_instance)
         FoodData.objects.bulk_create(foods)
- 
+
         return redirect('calc:profile', username=request.user)
 
     return render(request, template, context)
