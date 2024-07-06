@@ -2,21 +2,51 @@
 
 
 {% block content %}
-    <h2>{{food.description}}</h2>
-    <table>
+    <h2>
+      {% if 'ration' in request.path %}
+      {{ration.ration_name}}
+      <form>
+        <button name = "open_in_calc" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Открыть рацион в калькуляторе</a></button>
+      </form>
+      <form>
+        <button name = "delete" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Удалить рацион</a></button>
+      </form>
+        
+      {% else %}
+      {{food.description}}
+    {%endif%}
+  </h2>
+    <table class="table  table-sm table-striped table-hover">
         <thead>
         <tr>
-          <th> Nutrient </th>
-          <th> Amount </th>
+          {% if 'ration' in request.path %}
+          <th> Продукт </th>
+          <th> Масса, гр </th>         
+          {% else %}
+          <th> Нутриент </th>
+          <th> Количество </th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
+    {% if 'ration' in request.path %} 
+        {% for food in food_data %}
+          <tr>
+          <td>
+            <a class="btn btn-sm " href="{% url 'calc:food_detail' food.food_name.id %}" role="button"> 
+            {{food.food_name.description}}</a>
+          </td>
+          <td>  {{food.weight}} </td>
+          </tr>
+          {% endfor %}
+    {% else %}
     {% for nutr in nutrients %}
         <tr>
         <td>{{nutr.nutrient.name}}</td>
         <td>  {{nutr.amount}} {{nutr.nutrient.unit_name}} </td>
         </tr>
     {% endfor %}
+    {% endif %}
       </tbody>
     </table>
 {% endblock %}

@@ -8,9 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django import forms
 from calc.utils import pet_stage_calculate
-import datetime
-
-import os
+import ast
 
 import pprint
 
@@ -26,6 +24,38 @@ class FoodDetailView(DetailView):
             food_id=self.kwargs.get(self.pk_url_kwarg), nutrient__is_published=True).order_by('nutrient__order')
         context['nutrients'] = nutrients
         return context
+
+
+class RationDetailView(DetailView):
+    model = Rations
+    template_name = 'calc/detail.html'
+    pk_url_kwarg = 'ration_id'
+
+    def get(self, *args, **kwargs):
+        if 'open_in_calc' in self.request.GET:
+            print('redirect')
+            return redirect(reverse('calc:calc', args=(self.kwargs.get(self.pk_url_kwarg),)))
+        if 'delete' in self.request.GET:
+            print('redirect delete')
+            return redirect(reverse('calc:ration_delete', args=(self.kwargs.get(self.pk_url_kwarg),)))
+        return super().get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        food_data = FoodData.objects.select_related('food_name','ration').filter(
+            ration__id=self.kwargs.get(self.pk_url_kwarg))
+        context['food_data'] = food_data
+        context['ration'] = get_object_or_404(Rations, id=self.kwargs.get(self.pk_url_kwarg))
+        return context
+
+
+class RationDeleteView(DeleteView):
+    model = Rations
+    template_name = 'calc/delete.html'
+    pk_url_kwarg = 'ration_id'
+    success_url = reverse_lazy('calc:index')
+    # def get(self, *args, **kwargs):
+    #    return redirect(reverse('calc:profile', args=(self.request.user,)))
 
 
 class AnimalCreateView(LoginRequiredMixin, CreateView):
@@ -52,7 +82,7 @@ class AnimalCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('calc:calc')
+        return reverse('calc:profile',args=(self.request.user,))
 
 
 class AnimalUpdateView(LoginRequiredMixin, UpdateView):
@@ -91,7 +121,8 @@ def profile(request, username):
     template = 'animal/profile.html'
 
     if request.GET:
-        return redirect(reverse('calc:calc', kwargs={'chosen_food':[1,2]}))
+        ration_id = list(request.GET.keys())[0]
+        return redirect(reverse('calc:ration_detail', args=(ration_id,)))
 
     profile = get_object_or_404(User, username=username)
     animals = Animal.objects.filter(owner=profile)
@@ -102,13 +133,44 @@ def profile(request, username):
         rations_list.add(elem['ration'])
     rations = Rations.objects.filter(id__in=rations_list)
     print(rations)
-    context = {'profile': profile, 'animals': animals,'foods':foods,'rations':rations}
+    context = {'profile': profile, 'animals': animals, 'foods': foods, 'rations': rations}
     return render(request, template, context)
 
 
 @login_required
-def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
+def calc(request, ration=0):
     template = 'calc/calc.html'
+    if ration == 0:
+        foods = request.COOKIES.get('chosen_food')
+        mass = request.COOKIES.get('mass_dict')
+        pet = request.COOKIES.get('chosen_pet')
+        if foods is None:
+            chosen_food = []
+        else:
+            foods = ast.literal_eval(foods)
+            chosen_food = foods
+        if mass is None:
+            mass_dict = {}
+        else:
+            mass = ast.literal_eval(mass)
+            mass_dict = mass
+        if pet is None:
+            chosen_pet = None
+        else:
+            foods = ast.literal_eval(pet)
+            chosen_pet = get_object_or_404(Animal, id=pet)
+    else:
+        chosen_food = []
+        mass_dict = {}
+        chosen_pet = None
+        instance = FoodData.objects.filter(ration=ration).select_related('food_name')
+        for elem in instance:
+            chosen_food.append(elem.food_name.id)
+            mass_dict[elem.food_name.id] = elem.weight
+
+    print('chosen_food:',chosen_food)
+    print('mass_dict:',mass_dict)
+    print('chosen_pet:',chosen_pet)
 
     if request.GET:
         if 'food' in request.GET:
@@ -119,21 +181,23 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
                 if food_class.id not in chosen_food:
                     chosen_food.append(food_class.id)
                     mass_dict[food_class.id] = 100
+
         elif 'remove_food' in request.GET:
             remove_form = RemoveFoodForm(request.GET)
             if remove_form.is_valid():
                 food_to_remove = remove_form.cleaned_data['remove_food']
                 id = get_object_or_404(Food, description=food_to_remove).id
-                index = chosen_food.index(id)
-                chosen_food.pop(index)
-                del mass_dict[id]
+                if id in chosen_food:
+                    index = chosen_food.index(id)
+                    chosen_food.pop(index)
+                    del mass_dict[id]
         elif 'chose_pet' in request.GET:
             form = PetForm(request.GET or None)
             if form.is_valid():
                 pet_name = form.cleaned_data['chose_pet']
-                chosen_pet.append(get_object_or_404(Animal, name=pet_name, owner=request.user))
+                chosen_pet = get_object_or_404(Animal, name=pet_name, owner=request.user)
         elif 'pet_reset' in request.GET:
-            chosen_pet = []
+            chosen_pet = None
 
     if request.POST:
         for food_id in chosen_food:
@@ -141,15 +205,6 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
                 mass = int(request.POST['mass_' + str(food_id)])
                 if mass > 0:
                     mass_dict[food_id] = mass
-        # if 'make_file' in request.POST.keys():
-        #     path  = Path(__file__).resolve().parent.parent
-        #     print(type(path))
-        #     base_dir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        #     filename = chosen_pet[0].name+'_'+str(datetime.datetime.now().date())
-        #     file_path = base_dir+'/files/'+filename+'.txt'
-        #     print('time to make file!')
-        #     with open(file_path,'w') as file:
-        #         pprint.pp(context,file)
 
     foodlist = Food.objects.exclude(id__in=chosen_food)
     pet_list = Animal.objects.filter(owner=request.user)
@@ -161,7 +216,7 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
 
     # Pet
     if chosen_pet:
-        tmp = pet_stage_calculate(chosen_pet[0])
+        tmp = pet_stage_calculate(chosen_pet)
         if not tmp:
             return redirect('calc:index')
         else:
@@ -176,10 +231,10 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
                 if nutr.nutrient_name.name == 'Water':
                     recommended[nutr.nutrient_name] = ' '
 
-
     # Food
     if chosen_food:
-        mass_dict[0] = sum(mass_dict.values())-mass_dict.get(0,0)
+        mass_dict[0] = 0
+        mass_dict[0] = sum(mass_dict.values())
 
         # Totals
         for food_id in chosen_food:
@@ -189,7 +244,7 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
             for nutr in all_nutr.iterator():
                 totals[nutr.nutrient.name] = round(
                     totals.get(nutr.nutrient.name, 0)
-                    + mass_dict[food_id] * nutr.amount/100, 2
+                    + mass_dict.get(food_id,0) * nutr.amount/100, 2
                                                 )
 
         # Food nutrients
@@ -211,11 +266,11 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
         on_dry_matter = {}
         for nutr in totals:
             if nutr != 'Water' and nutr != 'Energy':
-                measure = round(100*totals[nutr]/(total_mass-total_water),2)
+                measure = round(100*totals[nutr]/(total_mass-total_water+0.0001),2) ##################
                 if measure >= 10: measure = round(measure,1)
                 if measure >= 100: measure = int(measure)
                 on_dry_matter[nutr] = measure
-        pprint.pp(on_dry_matter)
+     #   pprint.pp(on_dry_matter)
         if chosen_pet:
             on_dry_matter['Energy'] = totals['Energy']
     
@@ -233,31 +288,34 @@ def calc(request, chosen_food=[], mass_dict={}, chosen_pet=[]):
     if chosen_pet:
         context |= {
             'pet_stage': pet_stage_info,
-            'chosen_pet': chosen_pet[0],
+            'chosen_pet': chosen_pet,
             'recommended_nutr': recommended,
         }
 
-    if 'make_file' in request.POST.keys():
-            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            filename = chosen_pet[0].name+'_'+str(datetime.datetime.now().date())
-            file_path = base_dir+'/files/'+filename+'.txt'
-            print('time to make file!')
-            with open(file_path, 'w') as file:
-                pprint.pp(context, file)
+    # if 'make_file' in request.POST.keys():
+    #         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    #         filename = chosen_pet[0].name+'_'+str(datetime.datetime.now().date())
+    #         file_path = base_dir+'/files/'+filename+'.txt'
+    #         print('time to make file!')
+    #         with open(file_path, 'w') as file:
+    #             pprint.pp(context, file)
 
     if 'ration_name' in request.POST.keys():
         form = RationNameForm(request.POST or None)
         if form.is_valid():
-            ration_instance = Rations.objects.create(pet_name=chosen_pet[0].name, pet_info=pet_stage, ration_name=request.POST['ration_name'],owner=request.user)
-            print(mass_dict)
-            print(chosen_food)
+            ration_instance = Rations.objects.create(pet_name=chosen_pet.name, pet_info=pet_stage, ration_name=request.POST['ration_name'],owner=request.user)
             food_instance = Food.objects.filter(id__in=chosen_food)
             foods = (FoodData(ration=ration_instance, food_name=food, weight=mass_dict[food.id]) for food in food_instance)
         FoodData.objects.bulk_create(foods)
 
         return redirect('calc:profile', username=request.user)
 
-    return render(request, template, context)
+    response = render(request, template, context)
+    response.set_cookie(key='chosen_food', value=chosen_food)
+    response.set_cookie(key='mass_dict', value=mass_dict)
+    if chosen_pet:
+        response.set_cookie(key='chosen_pet', value=chosen_pet.id)
+    return response
 
 
 def food_search(request, chosen_nutrients=[], mass_dict={}):
@@ -316,7 +374,6 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
 def index(request):
     template = 'pages/about.html'
     return render(request, template)
-
 
 
 @login_required

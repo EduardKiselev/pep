@@ -146,10 +146,10 @@
     </table>
     {% endif %}
     {% if chosen_pet and items_name %}
-    <form method='POST'>
+    {% comment %} <form method='POST'>
       {% csrf_token %} 
       <button name = "make_file" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">создать файл</a></button>
-    </form>
+    </form> {% endcomment %}
 
     <form method='POST'>
       {% csrf_token %}
