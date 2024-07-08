@@ -294,9 +294,11 @@ def calc(request, ration=0):
                     food__id=elem,
                     nutrient__is_published=True)]
             nutrients += item
-            item_name = get_object_or_404(Food, id=elem)
-            items_name += [item_name]
-
+            try:
+                item_name = Food.objects.get(id=elem)
+                items_name += [item_name]
+            except Food.DoesNotExist:
+                item_name = None
         columns = NutrientsName.objects.filter(
             is_published=True).order_by('order')
 
