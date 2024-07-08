@@ -304,7 +304,7 @@ def calc(request, ration=0):
 
         # Dry_matter
         total_mass = mass_dict[0]
-        total_water = totals['Water']
+        total_water = totals.get('Water', 1)
         on_dry_matter = {}
         for nutr in totals:
             if nutr != 'Water' and nutr != 'Energy':
@@ -315,7 +315,7 @@ def calc(request, ration=0):
                     measure = int(measure)
                 on_dry_matter[nutr] = measure
         if chosen_pet:
-            on_dry_matter['Energy'] = totals['Energy']
+            on_dry_matter['Energy'] = totals.get('Energy',1)
 
     # context
     context = {"form": form,
