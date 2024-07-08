@@ -1,17 +1,16 @@
 import datetime
-from django.shortcuts import get_object_or_404
 from calc.models import PetStage
 
-def pet_stage_calculate(animal):
 
+def pet_stage_calculate(animal):
     birthday = animal.birthday
     weight = animal.weight
     pet_type = animal.type
     nursing = animal.nursing
     sterilized = animal.sterilized
 
-    today = (datetime.datetime.now() - datetime.datetime(1970,1,1)).days
-    birthday1 = (birthday - datetime.date(1970,1,1)).days
+    today = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).days
+    birthday1 = (birthday - datetime.date(1970, 1, 1)).days
     age = round((today-birthday1)/30.5, 1)
 
     pet_stage = PetStage.objects.filter(

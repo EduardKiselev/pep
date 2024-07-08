@@ -1,5 +1,6 @@
 from django.contrib import admin
-from calc.models import Food, NutrientsName, NutrientsQuantity, AnimalType, Animal
+from calc.models import Food, NutrientsName, NutrientsQuantity, \
+    AnimalType, Animal
 
 
 @admin.register(Food)
@@ -36,5 +37,6 @@ class AnimalType(admin.ModelAdmin):
 class Animal(admin.ModelAdmin):
     list_display = ('name', 'owner', 'type', 'nursing', 'weight', 'birthday')
     list_editable = ('owner', 'type', 'nursing', 'weight', 'birthday')
+
 
 admin.site.empty_value_display = 'Не задано'

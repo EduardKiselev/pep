@@ -1,0 +1,17 @@
+[flake8]
+# D100 Missing docstring in public module
+# D101 
+# D102 Missing docstring in public method
+# D103 Missing docstring in public function
+# D104 Missing docstring in public package
+# D105 Missing docstring in magic method
+# D106 Missing docstring in magic method
+extend-ignore = D100,D101, D102, D103, D104, D105, D106
+
+per-file-ignores =
+    # E501 line too long (81 > 79 characters)
+    ./calc/migrations/0001_initial.py: E501
+    # E501 line too long (81 > 79 characters)
+    ./foodcalc/settings.py: E501
+    # N815 variable '' in class scope should not be mixedCase
+    ./calc/models.py: N815

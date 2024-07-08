@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from calc.models import Food, NutrientsName, NutrientsQuantity, User, Animal, RecommendedNutrientLevelsDM, PetStage, Rations, FoodData
-from calc.forms import FoodForm, RemoveFoodForm, NutrinentForm, RemoveNutrinentForm, ProfileForm, PetForm, RationNameForm
+from calc.models import Food, NutrientsName, NutrientsQuantity, User, Animal, \
+    RecommendedNutrientLevelsDM, PetStage, Rations, FoodData
+from calc.forms import FoodForm, RemoveFoodForm, NutrinentForm, \
+    RemoveNutrinentForm, ProfileForm, PetForm, RationNameForm
 from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
@@ -9,8 +11,9 @@ from django.core.paginator import Paginator
 from django import forms
 from calc.utils import pet_stage_calculate
 import ast
+# from django.forms import formset_factory
 
-import pprint
+# import pprint
 
 
 class FoodDetailView(DetailView):
@@ -20,8 +23,10 @@ class FoodDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        nutrients = NutrientsQuantity.objects.select_related('nutrient', 'food').filter(
-            food_id=self.kwargs.get(self.pk_url_kwarg), nutrient__is_published=True).order_by('nutrient__order')
+        nutrients = NutrientsQuantity.objects.select_related(
+            'nutrient', 'food').filter(
+            food_id=self.kwargs.get(self.pk_url_kwarg),
+            nutrient__is_published=True).order_by('nutrient__order')
         context['nutrients'] = nutrients
         return context
 
@@ -34,18 +39,25 @@ class RationDetailView(DetailView):
     def get(self, *args, **kwargs):
         if 'open_in_calc' in self.request.GET:
             print('redirect')
-            return redirect(reverse('calc:calc', args=(self.kwargs.get(self.pk_url_kwarg),)))
+            return redirect(reverse('calc:calc',
+                                    args=(self.kwargs.get(
+                                        self.pk_url_kwarg),)))
         if 'delete' in self.request.GET:
             print('redirect delete')
-            return redirect(reverse('calc:ration_delete', args=(self.kwargs.get(self.pk_url_kwarg),)))
+            return redirect(reverse('calc:ration_delete',
+                                    args=(self.kwargs.get(
+                                        self.pk_url_kwarg),)))
         return super().get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        food_data = FoodData.objects.select_related('food_name','ration').filter(
+        food_data = FoodData.objects.select_related(
+            'food_name', 'ration').filter(
             ration__id=self.kwargs.get(self.pk_url_kwarg))
         context['food_data'] = food_data
-        context['ration'] = get_object_or_404(Rations, id=self.kwargs.get(self.pk_url_kwarg))
+        context['ration'] = get_object_or_404(Rations,
+                                              id=self.kwargs.get(
+                                                  self.pk_url_kwarg))
         return context
 
 
@@ -69,12 +81,16 @@ class AnimalCreateView(LoginRequiredMixin, CreateView):
         sterilized = form.cleaned_data.get('sterilized')
         nursing = form.cleaned_data.get('nursing')
         if sterilized*nursing:
-            form.add_error('nursing', forms.ValidationError('не возможно быть одновременно стерилизованным и кормящим/беременным'))
+            form.add_error('nursing', forms.ValidationError(
+                '''не возможно быть одновременно стерилизованным
+                и кормящим/беременным'''))
             return super().form_invalid(form)
 
         name = form.cleaned_data.get('name')
         if len(Animal.objects.filter(name=name, owner=self.request.user)) == 1:
-            form.add_error('name', forms.ValidationError('У вас уже есть питомец с этим именем'))
+            form.add_error('name',
+                           forms.ValidationError('''У вас уже есть питомец
+                                                 с этим именем'''))
             return super().form_invalid(form)
 
         form.instance.owner = self.request.user
@@ -82,7 +98,7 @@ class AnimalCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('calc:profile',args=(self.request.user,))
+        return reverse('calc:profile', args=(self.request.user,))
 
 
 class AnimalUpdateView(LoginRequiredMixin, UpdateView):
@@ -96,7 +112,10 @@ class AnimalUpdateView(LoginRequiredMixin, UpdateView):
         sterilized = form.cleaned_data.get('sterilized')
         nursing = form.cleaned_data.get('nursing')
         if sterilized*nursing:
-            form.add_error('nursing', forms.ValidationError('не возможно быть одновременно стерилизованным и кормящим/беременным'))
+            form.add_error('nursing',
+                           forms.ValidationError(
+                               '''не возможно быть одновременно стерилизованным
+                                                 и кормящим/беременным'''))
             return super().form_invalid(form)
 
         form.instance.owner = self.request.user
@@ -126,14 +145,18 @@ def profile(request, username):
 
     profile = get_object_or_404(User, username=username)
     animals = Animal.objects.filter(owner=profile)
-    foods = FoodData.objects.select_related('ration','food_name').filter(ration__owner=profile)
+    foods = FoodData.objects.select_related(
+        'ration', 'food_name').filter(ration__owner=profile)
     rations_list = set()
     rations = Rations.objects.filter(id__in=rations_list)
     for elem in foods.values('ration'):
         rations_list.add(elem['ration'])
     rations = Rations.objects.filter(id__in=rations_list)
     print(rations)
-    context = {'profile': profile, 'animals': animals, 'foods': foods, 'rations': rations}
+    context = {'profile': profile,
+               'animals': animals,
+               'foods': foods,
+               'rations': rations}
     return render(request, template, context)
 
 
@@ -159,18 +182,21 @@ def calc(request, ration=0):
         else:
             foods = ast.literal_eval(pet)
             chosen_pet = get_object_or_404(Animal, id=pet)
+            if chosen_pet.owner != request.user:
+                chosen_pet = None
     else:
         chosen_food = []
         mass_dict = {}
         chosen_pet = None
-        instance = FoodData.objects.filter(ration=ration).select_related('food_name')
+        instance = FoodData.objects.filter(
+            ration=ration).select_related('food_name')
         for elem in instance:
             chosen_food.append(elem.food_name.id)
             mass_dict[elem.food_name.id] = elem.weight
 
-    print('chosen_food:',chosen_food)
-    print('mass_dict:',mass_dict)
-    print('chosen_pet:',chosen_pet)
+    print('chosen_food:', chosen_food)
+    print('mass_dict:', mass_dict)
+    print('chosen_pet:', chosen_pet)
 
     if request.GET:
         if 'food' in request.GET:
@@ -195,16 +221,19 @@ def calc(request, ration=0):
             form = PetForm(request.GET or None)
             if form.is_valid():
                 pet_name = form.cleaned_data['chose_pet']
-                chosen_pet = get_object_or_404(Animal, name=pet_name, owner=request.user)
+                chosen_pet = get_object_or_404(Animal,
+                                               name=pet_name,
+                                               owner=request.user)
         elif 'pet_reset' in request.GET:
             chosen_pet = None
 
     if request.POST:
         for food_id in chosen_food:
-            if 'mass_' + str(food_id) in request.POST.keys() and request.POST['mass_' + str(food_id)]:
-                mass = int(request.POST['mass_' + str(food_id)])
-                if mass > 0:
-                    mass_dict[food_id] = mass
+            if 'mass_' + str(food_id) in request.POST.keys():
+                if request.POST['mass_' + str(food_id)]:
+                    mass = int(request.POST['mass_' + str(food_id)])
+                    if mass > 0:
+                        mass_dict[food_id] = mass
 
     foodlist = Food.objects.exclude(id__in=chosen_food)
     pet_list = Animal.objects.filter(owner=request.user)
@@ -222,12 +251,16 @@ def calc(request, ration=0):
         else:
             pet_stage, weight = tmp
             pet_stage_info = get_object_or_404(PetStage, id=pet_stage.id)
-            rec_nutr = RecommendedNutrientLevelsDM.objects.filter(pet_stage__id=pet_stage.id).select_related('nutrient_name')
+            rec_nutr = RecommendedNutrientLevelsDM.objects.filter(
+                pet_stage__id=pet_stage.id).select_related('nutrient_name')
             recommended = {}
             for nutr in rec_nutr.iterator():
                 recommended[nutr.nutrient_name] = nutr.nutrient_amount
                 if nutr.nutrient_name.name == 'Energy':
-                    recommended[nutr.nutrient_name] = round(get_object_or_404(rec_nutr,nutrient_name__name='Energy').nutrient_amount*(weight)**(0.75),2)
+                    nutr_amount = get_object_or_404(
+                        rec_nutr, nutrient_name__name='Energy').nutrient_amount
+                    recommended[nutr.nutrient_name] = round(
+                        nutr_amount * (weight)**(0.75), 2)
                 if nutr.nutrient_name.name == 'Water':
                     recommended[nutr.nutrient_name] = ' '
 
@@ -244,7 +277,7 @@ def calc(request, ration=0):
             for nutr in all_nutr.iterator():
                 totals[nutr.nutrient.name] = round(
                     totals.get(nutr.nutrient.name, 0)
-                    + mass_dict.get(food_id,0) * nutr.amount/100, 2
+                    + mass_dict.get(food_id, 0) * nutr.amount/100, 2
                                                 )
 
         # Food nutrients
@@ -258,24 +291,29 @@ def calc(request, ration=0):
             item_name = get_object_or_404(Food, id=elem)
             items_name += [item_name]
 
-        columns = NutrientsName.objects.filter(is_published=True).order_by('order')
-    
+        columns = NutrientsName.objects.filter(
+            is_published=True).order_by('order')
+
         # Dry_matter
         total_mass = mass_dict[0]
         total_water = totals['Water']
         on_dry_matter = {}
         for nutr in totals:
             if nutr != 'Water' and nutr != 'Energy':
-                measure = round(100*totals[nutr]/(total_mass-total_water+0.0001),2) ##################
-                if measure >= 10: measure = round(measure,1)
-                if measure >= 100: measure = int(measure)
+                measure = round(100*totals[nutr]/(total_mass-total_water), 2)
+                if measure >= 10:
+                    measure = round(measure, 1)
+                if measure >= 100:
+                    measure = int(measure)
                 on_dry_matter[nutr] = measure
-     #   pprint.pp(on_dry_matter)
         if chosen_pet:
             on_dry_matter['Energy'] = totals['Energy']
-    
+
     # context
-    context = {"form": form, "showfood": foodlist, "mass_dict": mass_dict, 'pet_list': pet_list}
+    context = {"form": form,
+               "showfood": foodlist,
+               "mass_dict": mass_dict,
+               'pet_list': pet_list}
     if chosen_food:
         context |= {
             'delete_list': delete_list,
@@ -283,7 +321,7 @@ def calc(request, ration=0):
             'items': nutrients,
             'items_name': items_name,
             'totals': totals,
-            'on_dry_matter': on_dry_matter
+            'on_dry_matter': on_dry_matter,
                    }
     if chosen_pet:
         context |= {
@@ -292,20 +330,16 @@ def calc(request, ration=0):
             'recommended_nutr': recommended,
         }
 
-    # if 'make_file' in request.POST.keys():
-    #         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    #         filename = chosen_pet[0].name+'_'+str(datetime.datetime.now().date())
-    #         file_path = base_dir+'/files/'+filename+'.txt'
-    #         print('time to make file!')
-    #         with open(file_path, 'w') as file:
-    #             pprint.pp(context, file)
-
     if 'ration_name' in request.POST.keys():
         form = RationNameForm(request.POST or None)
         if form.is_valid():
-            ration_instance = Rations.objects.create(pet_name=chosen_pet.name, pet_info=pet_stage, ration_name=request.POST['ration_name'],owner=request.user)
+            ration_instance = Rations.objects.create(
+                pet_name=chosen_pet.name, pet_info=pet_stage,
+                ration_name=request.POST['ration_name'], owner=request.user)
             food_instance = Food.objects.filter(id__in=chosen_food)
-            foods = (FoodData(ration=ration_instance, food_name=food, weight=mass_dict[food.id]) for food in food_instance)
+            foods = (FoodData(
+                ration=ration_instance, food_name=food,
+                weight=mass_dict[food.id]) for food in food_instance)
         FoodData.objects.bulk_create(foods)
 
         return redirect('calc:profile', username=request.user)
@@ -343,7 +377,8 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
                 mass_dict[nutrient_id] = mass
 
     template = 'calc/func.html'
-    nutrient_list = NutrientsName.objects.filter(is_published=True).exclude(id__in=chosen_nutrients)
+    nutrient_list = NutrientsName.objects.filter(is_published=True).exclude(
+        id__in=chosen_nutrients)
     form = NutrinentForm()
 
     if chosen_nutrients:
@@ -359,13 +394,18 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
                     totals.get(object.food, 0) +
                     mass_dict[nutrient] * object.amount, 2)
                 nutrients[nutrient][object.food] = object.amount
-        all_food = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:75]
+        all_food = sorted(totals.items(), key=lambda x: x[1],
+                          reverse=True)[:75]
         paginator = Paginator(all_food, 15)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-        add_context = {'delete_list': delete_list, 'page_obj': page_obj, 'nutrients': nutrients}
+        add_context = {'delete_list': delete_list,
+                       'page_obj': page_obj,
+                       'nutrients': nutrients}
 
-    context = {'nutrient_list': nutrient_list, 'chosen_nutrients': chosen_nutrients, 'mass_dict': mass_dict}
+    context = {'nutrient_list': nutrient_list,
+               'chosen_nutrients': chosen_nutrients,
+               'mass_dict': mass_dict}
     if chosen_nutrients:
         context |= add_context
     return render(request, template, context)
@@ -391,8 +431,10 @@ def profile_update(request):
 def recnutrlvl(request):
     template = 'calc/recnutrlvl.html'
     pet_stages = PetStage.objects.all().select_related('pet_type')
-    nutrients = RecommendedNutrientLevelsDM.objects.all().select_related('nutrient_name')
-    nutrients_name = NutrientsName.objects.exclude(name='Water').filter(is_published=True).order_by('order')
+    nutrients = RecommendedNutrientLevelsDM.objects.all().select_related(
+        'nutrient_name')
+    nutrients_name = NutrientsName.objects.exclude(
+        name='Water').filter(is_published=True).order_by('order')
     nutrient_dict = {}
 
     for stage in pet_stages:

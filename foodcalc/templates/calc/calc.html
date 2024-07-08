@@ -91,13 +91,17 @@
             <th> Amount, g </th>
             {% for item in items_name%}
             <td style="text-align: center; vertical-align: middle;">
+
             <form method='POST' >
               {% csrf_token %} 
               <label for='quan_{{food}}'> </label>
               <input type="number" Placeholder='{{mass_dict|dict_key:item.id}}' name="mass_{{item.id}}" style="width: 60px;">
-            </form>
-            </td>       
-            {% endfor %}
+            </form> 
+          </td>  
+
+            {% endfor %} 
+            
+
             <td style="text-align: center; vertical-align: middle;">
             {{ mass_dict|dict_key:0 }}   
             </td>
