@@ -183,11 +183,13 @@ def calc(request, ration=0):
             foods = ast.literal_eval(pet)
             try:
                 chosen_pet = Animal.objects.get(id=pet)
+                if chosen_pet.owner != request.user:
+                    chosen_pet = None
             except Animal.DoesNotExist:
                 chosen_pet = None
             # chosen_pet = get_object_or_404(Animal, id=pet)
-            if chosen_pet.owner != request.user:
-                chosen_pet = None
+            # if chosen_pet.owner != request.user:
+            #    chosen_pet = None
     else:
         chosen_food = []
         mass_dict = {}
