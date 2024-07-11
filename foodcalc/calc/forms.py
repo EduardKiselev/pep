@@ -1,6 +1,6 @@
 from django import forms
-from calc.models import User
-
+from calc.models import User, NutrientsName
+from calc.fields import ListTextWidget
 
 class PetForm(forms.Form):
     chose_pet = forms.CharField(max_length=150)
@@ -19,7 +19,7 @@ class RemoveFoodForm(forms.Form):
 
 
 class MassForm(forms.Form):
-    mass = forms.IntegerField()
+    mass = forms.FloatField()
 
 
 class NutrinentForm(forms.Form):
@@ -34,3 +34,16 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
+
+
+class FoodNameForm(forms.Form):
+    food_name = forms.CharField(max_length=50)
+
+
+class FormNutrAdd(forms.Form):
+    nutrient = forms.ModelChoiceField(queryset=NutrientsName.objects.none())
+    amount = forms.FloatField()
+
+
+class FormNutrRemove(forms.Form):
+    nutrient = forms.ModelChoiceField(queryset=NutrientsName.objects.none(),)

@@ -95,7 +95,7 @@
             <form method='POST' >
               {% csrf_token %} 
               <label for='quan_{{food}}'> </label>
-              <input type="number" Placeholder='{{mass_dict|dict_key:item.id}}' name="mass_{{item.id}}" style="width: 60px;">
+              <input type="number" step="0.1" Placeholder='{{mass_dict|dict_key:item.id}}' name="mass_{{item.id}}" style="width: 60px;">
             </form> 
           </td>  
 

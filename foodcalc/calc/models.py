@@ -6,7 +6,7 @@ User = get_user_model()
 
 
 class Food(models.Model):
-    description = models.CharField(max_length=150)
+    description = models.CharField(max_length=150, unique=True, verbose_name='Название продукта')
     ndbNumber = models.IntegerField()
     fdcId = models.IntegerField()
 #    foodCategory = models.CharField(max_length=50)
@@ -18,6 +18,10 @@ class Food(models.Model):
 
     def __str__(self):
         return 'CLASS ' + self.description
+    
+    class Meta:
+        verbose_name = 'Продукт'
+        verbose_name_plural = 'Продукты'
 
 
 class NutrientsName(models.Model):
@@ -29,7 +33,10 @@ class NutrientsName(models.Model):
     order = models.IntegerField(default=100)
 
     def __str__(self):
-        return 'CLASS ' + self.name
+        return self.name
+    
+    class Meta:
+        ordering = ['order']
 
 
 class NutrientsQuantity(models.Model):
@@ -128,4 +135,4 @@ class FoodData(models.Model):
                                related_name='ration')
     food_name = models.ForeignKey(Food, on_delete=models.CASCADE,
                                   related_name='food')
-    weight = models.IntegerField()
+    weight = models.FloatField()

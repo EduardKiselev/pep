@@ -39,4 +39,5 @@ class Animal(admin.ModelAdmin):
     list_editable = ('owner', 'type', 'nursing', 'weight', 'birthday')
 
 
+
 admin.site.empty_value_display = 'Не задано'

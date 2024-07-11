@@ -2,35 +2,49 @@
 <header>
   <nav class="navbar navbar-light" style="background-color: lightskyblue">
     <div class="container">
+      <div class='row'>
+        <div class='col-sm-2'>
       <a class="navbar-brand" href="{% url 'calc:index' %}">
         <img src="{% static 'img/logo.png' %}" width="100" height="46" class="d-inline-block align-top" alt="">
         <p>PetFoodCalc</p>
       </a>
+    </div>
       {% with request.resolver_match.view_name as view_name %}
+      
+        <div class='col-sm-5'>
         <ul class="nav  nav-pills">
+
           <li class="nav-item">
             <a class="nav-link {% if view_name == 'calc:func' %} text-white {% endif %}" href="{% url 'calc:func' %}">
-              Поиск продукта
+              Поиск продукта по нутриентам
             </a>             
-          </li>
+          </li>               
           <li class="nav-item">
           <a class="nav-link {% if view_name == 'calc:calc' %} text-white {% endif %}" href="{% url 'calc:calc' '0'%}">
             Калькулятор
           </a>  
         </li>
         <li class="nav-item">
+          <a class="nav-link {% if view_name == 'calc:food_search_by_name' %} text-white {% endif %}" href="{% url 'calc:food_search_by_name' %}">
+            Поиск продукта по названию
+          </a>             
+        </li>        
+        <li class="nav-item">
           <a class="nav-link {% if view_name == 'calc:recnutrlvl' %} text-white {% endif %}" href="{% url 'calc:recnutrlvl' %}">
             Таблица нутриентов
           </a>  
         </li>
-
+        </div>
+        <div class='col-sm-5'>
           {% if user.is_authenticated %}
             <div class="btn-group" role="group" aria-label="Basic outlined example">
               <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
                   href="{% url 'calc:profile' user.username %}">{{ user.username }}</a></button>
               <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
                   href="{% url 'calc:animal_create' %}"> Добавить питомца</a></button>             
-                  
+              <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
+                    href="{% url 'calc:food_create' %}"> Добавить продукт</a></button> 
+                
               <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
                   href="{% url 'logout' %}">Выйти</a></button>
               {% if user.is_staff %}

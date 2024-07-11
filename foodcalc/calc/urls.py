@@ -7,7 +7,7 @@ app_name = 'calc'
 urlpatterns = [
     path('', views.index, name='index'),
     path('func/', views.food_search, name='func'),
-    path('calc/<int:ration>', views.calc, name='calc'),
+    path('calc/<int:ration>/', views.calc, name='calc'),
     path('detail/<int:food_id>/',
          views.FoodDetailView.as_view(),
          name='food_detail'),
@@ -29,4 +29,7 @@ urlpatterns = [
     path('ration_delete/<int:ration_id>',
          views.RationDeleteView.as_view(),
          name='ration_delete'),
+    path('food_create/', views.FoodCreateView.as_view(), name='food_create'),
+    path('food_update/<int:food_id>/', views.food_update, name='food_update'),
+    path('food_search_by_name/', views.food_search_by_name, name='food_search_by_name'),
 ]

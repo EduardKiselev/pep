@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+{% block title %}
+Редактирование {{food_instance.description}}
+{% endblock %}
+
+
+{% block content %}
+    <h2>{{food_instance.description}} (на 100гр продукта)</h2>
+    <h3>Добавить Нутриент</h3>
+    <form method='POST'>
+        {%csrf_token %}
+        {{ form_add }}
+        {% bootstrap_button button_type="submit" content="Добавить" %}
+    </form> 
+    <h3>Убрать Нутриент</h3>
+    <form method='POST'>
+        {% csrf_token %}
+        {{ form_remove }}
+        {% bootstrap_button button_type="submit" content="Убрать" %}
+    </form>
+    <table class="table  table-sm table-striped table-hover">
+        <thead>
+        <tr>
+          <th> Нутриент </th>
+          <th> Количество </th>
+        </tr>
+      </thead>
+      <tbody>
+    {% for nutr in food_nutrients %}
+        <tr>
+        <td>{{nutr.nutrient.name}}</td>
+        <td>  {{nutr.amount}} {{nutr.nutrient.unit_name}} </td>
+        </tr>
+    {% endfor %}
+      </tbody>
+    </table>
+
+{% endblock %}
