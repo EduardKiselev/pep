@@ -51,6 +51,8 @@
     </table>
     {% if 'detail/' in request.path %}
     <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-      href="{% url 'calc:food_update' food.id%}"> Редактировать данные о продукте</a></button>  
+      href="{% url 'calc:food_update' food.id%}"> Редактировать данные о продукте</a></button>
+      <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
+        href="{% url 'calc:food_delete' food.id%}"> Удалить продукт</a></button>  
     {% endif %}
     {% endblock %}

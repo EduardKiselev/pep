@@ -32,4 +32,5 @@ urlpatterns = [
     path('food_create/', views.FoodCreateView.as_view(), name='food_create'),
     path('food_update/<int:food_id>/', views.food_update, name='food_update'),
     path('food_search_by_name/', views.food_search_by_name, name='food_search_by_name'),
+    path('food_delete/<int:pk>/', views.FoodDeleteView.as_view(), name='food_delete'),
 ]

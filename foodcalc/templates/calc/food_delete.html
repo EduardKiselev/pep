@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}
+Удаление еды
+{% endblock %}
+
+{% block content %}
+<h3> Вы уверены что хотите удалить {{food.description}} </h3>
+<form method="post" enctype="multipart/form-data" class="form-inline">
+    {% csrf_token %}
+    {% bootstrap_button button_type="submit" content="Удалить" %} 
+    {% comment %} <input class="form-control" type="text" name='description' placeholder="Введите название нового продукта" style="width:400px;">
+    <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Создать</a></button> {% endcomment %}
+  </form>
+{% endblock %}

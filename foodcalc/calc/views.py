@@ -530,3 +530,13 @@ def food_search_by_name(request):
             get_object_or_404(foodlist,
                               description=form.cleaned_data['food']).id,)))
     return render(request, template, {'foodlist': foodlist, 'form': form})
+
+
+class FoodDeleteView(DeleteView, LoginRequiredMixin):
+    model = Food
+    template_name = 'calc/food_delete.html'
+    
+
+    def get_success_url(self):
+        return reverse_lazy('calc:index')
+    
