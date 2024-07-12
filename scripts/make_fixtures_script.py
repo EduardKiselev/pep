@@ -128,7 +128,7 @@ for file_info in files:
                 if value > 0:
      #               print(data[i]['description'],calc_nutr)
                     current_nutr = {}
-                    current_nutr['model'] = 'calc.nutrientsquantity'
+                    current_nutr['model'] = 'food.nutrientsquantity'
                     current_nutr['pk'] = curr_nurt_quantity_pk
                     curr_nurt_quantity_pk += 1
                     current_nutr['fields'] = {}
@@ -149,7 +149,7 @@ for file_info in files:
             food_added.add(data[i]['description'])
 
         current = {}
-        current['model'] = 'calc.food'
+        current['model'] = 'food.food'
         food_pk += 1
         current['pk'] = food_pk
         current['fields'] = {
@@ -179,7 +179,7 @@ for file_info in files:
                     nutrients_added.add(name)
                     # for nutrinents Name and measure
                     nutr_name = {}
-                    nutr_name['model'] = 'calc.nutrientsname'
+                    nutr_name['model'] = 'food.nutrientsname'
                     nutr_name['pk'] = nutr_name_pk
                     nutrients_dict[name] = nutr_name_pk
                     nutr_name_pk += 1
@@ -202,7 +202,7 @@ for file_info in files:
                         calc_name = calculated[name]
                         if nutrients_dict.get(calc_name) is None:
                             nutr_name = {}
-                            nutr_name['model'] = 'calc.nutrientsname'
+                            nutr_name['model'] = 'food.nutrientsname'
                             nutr_name['pk'] = nutr_name_pk
                             nutrients_dict[calc_name] = nutr_name_pk
                             nutr_name_pk += 1
@@ -216,7 +216,7 @@ for file_info in files:
 
                 # for nutrinents_quantity
                 current_nutr = {}
-                current_nutr['model'] = 'calc.nutrientsquantity'
+                current_nutr['model'] = 'food.nutrientsquantity'
                 current_nutr['pk'] = curr_nurt_quantity_pk
                 curr_nurt_quantity_pk += 1
                 current_nutr['fields'] = {}
@@ -297,7 +297,7 @@ animal_type_dict = {}
 animal_types = []
 for type in seq_of_data:
     animal_type = {}
-    animal_type['model'] = 'calc.animaltype'
+    animal_type['model'] = 'animal.animaltype'
     animal_type['pk'] = animal_pk
     animal_type_dict[type] = animal_pk
     animal_pk += 1
@@ -313,7 +313,7 @@ pet_stages = []
 for type_animal in seq_of_data:
     for stage, description in seq_of_data[type_animal]:
         pet_stage = {}
-        pet_stage['model'] = 'calc.petstage'
+        pet_stage['model'] = 'animal.petstage'
         pet_stage['pk'] = pet_stage_pk
         pet_stage_dict[type_animal+'_'+stage] = pet_stage_pk
         pet_stage_pk += 1
@@ -377,7 +377,7 @@ for file in files:
 
                 if nutrients_dict.get(nutrient) is None:
                     nutr_name = {}
-                    nutr_name['model'] = 'calc.nutrientsname'
+                    nutr_name['model'] = 'food.nutrientsname'
                     nutr_name['pk'] = nutr_name_pk
                     nutrients_dict[nutrient] = nutr_name_pk
                     nutr_name_pk += 1

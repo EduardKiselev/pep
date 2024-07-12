@@ -55,7 +55,7 @@
     <p>Вес: {{chosen_pet.weight}} кг</p>
 
 
-    <a class="btn btn-sm text-muted" href="{% url 'calc:animal_update' chosen_pet.id %}">Редактировать данные о питомце</a>
+    <a class="btn btn-sm text-muted" href="{% url 'animal:animal_update' chosen_pet.id %}">Редактировать данные о питомце</a>
      <form>
       <button type="submit" name='pet_reset' class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Изменить питомца</a></button>
      </form>

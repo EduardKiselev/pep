@@ -24,6 +24,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'pages.apps.PagesConfig',
     'calc.apps.CalcConfig',
+    'animal.apps.AnimalConfig',
+    'food.apps.FoodConfig',
     'django_bootstrap5',
     'debug_toolbar',
 ]

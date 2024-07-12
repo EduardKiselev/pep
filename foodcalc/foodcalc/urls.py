@@ -8,6 +8,8 @@ from django.views.generic.edit import CreateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('pages/', include('pages.urls', namespace='pages')),
+    path('animal/', include('animal.urls', namespace='animal')),
+    path('food/', include('food.urls', namespace='food')),
     path('', include('calc.urls', namespace='calc')),
     path('auth/registration/', CreateView.as_view(
         template_name='registration/registration_form.html',

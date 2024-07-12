@@ -1,6 +1,6 @@
 from django import forms
 from calc.models import User, NutrientsName
-from calc.fields import ListTextWidget
+
 
 class PetForm(forms.Form):
     chose_pet = forms.CharField(max_length=150)

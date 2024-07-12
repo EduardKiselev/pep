@@ -14,7 +14,7 @@
       {% if user.is_authenticated and request.user == profile %}
       <a class="btn btn-sm text-muted" href="{% url 'calc:edit_profile' %}">Редактировать профиль</a>
       <a class="btn btn-sm text-muted" href="{% url 'password_change' %}">Изменить пароль</a>
-      <a class="btn btn-sm text-muted" href="{% url 'calc:animal_create' %}">Добавить питомца</a>  
+      <a class="btn btn-sm text-muted" href="{% url 'animal:animal_create' %}">Добавить питомца</a>  
       {% endif %}
     </ul>
   </small>
@@ -26,8 +26,8 @@
       <p> Информация о питомце:</p> 
       <p>дата рождения: {{animal.birthday}}, возраст {{animal.birthday|age}} месяцев</p> 
       <p>тип {{animal.type}} {%if animal.nursing %}, является кормящей {% endif %} {%if animal.sterilized %}, питомец стерилизован {% endif %}, вес {{animal.weight}} кг </p>
-      <a href="{% url 'calc:animal_update' animal.id %}">Редактировать</a>
-      <a href="{% url 'calc:animal_delete' animal.id %}">Удалить</a>
+      <a href="{% url 'animal:animal_update' animal.id %}">Редактировать</a>
+      <a href="{% url 'animal:animal_delete' animal.id %}">Удалить</a>
     </article>
   {% endfor %}
   <h3 class="mb-5 text-center">Составленные рационы</h3>

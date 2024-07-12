@@ -60,7 +60,7 @@
         {% for food,rate in page_obj %}
         <tr>
         <th>
-           <a class="btn btn-sm " href="{% url 'calc:food_detail' food.id %}" role="button"> 
+           <a class="btn btn-sm " href="{% url 'food:food_detail' food.id %}" role="button"> 
          {{food.description}}
         </th>
         <th style="text-align: center; vertical-align: middle;">
