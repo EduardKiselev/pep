@@ -150,7 +150,6 @@ def profile(request, username):
     if request.GET:
         ration_id = list(request.GET.keys())[0]
         return redirect(reverse('calc:ration_detail', args=(ration_id,)))
-
     profile = get_object_or_404(User, username=username)
     animals = Animal.objects.filter(owner=profile)
     foods = FoodData.objects.select_related(
@@ -536,7 +535,6 @@ class FoodDeleteView(DeleteView, LoginRequiredMixin):
     model = Food
     template_name = 'calc/food_delete.html'
     
-
     def get_success_url(self):
         return reverse_lazy('calc:index')
     
