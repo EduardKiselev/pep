@@ -5,11 +5,11 @@ User = get_user_model()
 
 
 class AnimalType(models.Model):
-    title = models.CharField(max_length=50)
-    description = models.TextField(verbose_name='Описание')
+    title = models.CharField(max_length=50,verbose_name='Название на латинском')
+    description = models.TextField(verbose_name='Название на русском')
 
     def __str__(self):
-        return self.title
+        return self.description
 
 
 class Animal(models.Model):

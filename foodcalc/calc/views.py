@@ -61,11 +61,9 @@ def profile(request, username):
     foods = FoodData.objects.select_related(
         'ration', 'food_name').filter(ration__owner=profile)
     rations_list = set()
-    rations = Rations.objects.filter(id__in=rations_list)
     for elem in foods.values('ration'):
         rations_list.add(elem['ration'])
     rations = Rations.objects.filter(id__in=rations_list)
-    print(rations)
     context = {'profile': profile,
                'animals': animals,
                'foods': foods,

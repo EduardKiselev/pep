@@ -1,6 +1,6 @@
 from django import forms
 from calc.models import User, NutrientsName
-
+from animal.models import Animal
 
 class PetForm(forms.Form):
     chose_pet = forms.CharField(max_length=150)
@@ -47,3 +47,10 @@ class FormNutrAdd(forms.Form):
 
 class FormNutrRemove(forms.Form):
     nutrient = forms.ModelChoiceField(queryset=NutrientsName.objects.none(),)
+
+
+class AnimalForm(forms.ModelForm):
+    
+    class Meta:
+        model = Animal
+        fields = ['name', 'type', 'nursing', 'sterilized', 'weight', 'birthday',]

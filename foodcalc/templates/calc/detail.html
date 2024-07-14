@@ -33,7 +33,7 @@
         {% for food in food_data %}
           <tr>
           <td>
-            <a class="btn btn-sm " href="{% url 'calc:food_detail' food.food_name.id %}" role="button"> 
+            <a class="btn btn-sm " href="{% url 'food:food_detail' food.food_name.id %}" role="button"> 
             {{food.food_name.description}}</a>
           </td>
           <td>  {{food.weight}} </td>

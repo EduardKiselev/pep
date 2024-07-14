@@ -3,6 +3,7 @@ from animal.models import Animal
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django import forms
+from calc.forms import AnimalForm
 
 
 class AnimalCreateView(LoginRequiredMixin, CreateView):
@@ -12,7 +13,6 @@ class AnimalCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
-
         sterilized = form.cleaned_data.get('sterilized')
         nursing = form.cleaned_data.get('nursing')
         if sterilized*nursing:
@@ -38,8 +38,9 @@ class AnimalCreateView(LoginRequiredMixin, CreateView):
 
 class AnimalUpdateView(LoginRequiredMixin, UpdateView):
     model = Animal
+    form_class = AnimalForm
     template_name = 'animal/create.html'
-    fields = ['name', 'type', 'nursing', 'sterilized', 'weight', 'birthday']
+    #fields = ['name', 'type', 'nursing', 'sterilized', 'weight', 'birthday']
 
     def form_valid(self, form):
         self.object = form.save(commit=False)

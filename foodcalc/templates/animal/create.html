@@ -23,10 +23,11 @@
         {% endif %}
       </div>
       <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post">
           {% csrf_token %}
           {% if not '/delete/' in request.path %}
             {% bootstrap_form form %}
+            {% bootstrap_button button_type="submit" content="Создать" %}
           {% else %}
             <article>
             <p>Хозяин: {{animal.owner}} </p>
@@ -34,8 +35,9 @@
             <p>Масса: {{animal.weight}}, кг </p>
             <p>Возраст: {{animal.birthday|age }}, месяцев </p>
             </article>
+            {% bootstrap_button button_type="submit" content="Удалить" %}
           {% endif %}
-          {% bootstrap_button button_type="submit" content="Подтвердить" %}
+          
         </form>
       </div>
     </div>

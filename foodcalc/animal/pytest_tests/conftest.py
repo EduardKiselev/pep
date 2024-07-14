@@ -1,10 +1,11 @@
 import pytest
-
+from django.contrib.auth import get_user_model
 from django.test.client import Client
 from animal.models import Animal, AnimalType
 from django.shortcuts import get_object_or_404
 import datetime
 
+User = get_user_model()
 
 @pytest.fixture
 def auth_user(django_user_model):
@@ -19,6 +20,11 @@ def not_auth_user(django_user_model):
 @pytest.fixture
 def animal_owner_user(django_user_model):
     return django_user_model.objects.create(username='animal_owner')
+
+
+@pytest.fixture
+def owner_id(animal_owner_user):
+    return (get_object_or_404(User, username=animal_owner_user).username,)
 
 
 @pytest.fixture
@@ -45,9 +51,9 @@ def animal_owner_client(animal_owner_user):
 def animal_type():
     animal_type = AnimalType.objects.create(
         title='Кошка',
-        description='nhjkjkj'
+        description='cat'
         )
-    animal_type = get_object_or_404(AnimalType,title='Кошка')
+    #animal_type = get_object_or_404(AnimalType,title='Кошка')
     return animal_type
 
 
@@ -70,12 +76,13 @@ def pet_id(pet):
 
 
 @pytest.fixture
-def pet_form_data(animal_type):
+def pet_form_data(animal_type,animal_owner_user):
     return {
         'name': 'Мурка2',
         'type': animal_type,
         'nursing': True,
         'sterilized': False,
-        'weight': 5.5,
-        'birthday': datetime.date(2024, 1, 1),
+        'weight': 5,
+      # 'owner': animal_owner_user,
+        'birthday': '01.01.2024',
     }
