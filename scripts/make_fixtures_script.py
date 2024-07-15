@@ -447,8 +447,22 @@ for file in files:
                 recommendednutrientlevels.append(nutr)
               #  print(pet_type+'_'+seq[index][0],nutrient,measure,unit_name_in_DB_dict[nutrient])
 
+#user
+user = [{"model": "auth.user", "pk": 1, 
+  "fields": {"password": "pbkdf2_sha256$260000$G6t0cN42gI3dYUdf1mJFgg$K/uKQpyk2mCGMI8Ca3fQ4pb4jss5j96DxSaDYv9HX44=",
+              "last_login": "2024-07-15T03:01:10.100Z",
+              "is_superuser": True,
+              "username": "FoodData",
+              "is_staff": True,
+              "is_active": True,
+              "date_joined":"2024-07-15T02:53:45.109Z",
+              "groups": [],
+              "user_permissions": []}}]
+
+
+
 output = nutr_name_list + food + nutrients +\
-     animal_types + pet_stages + recommendednutrientlevels
+     animal_types + pet_stages + recommendednutrientlevels + user
 print('Writing Data')
 write_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/foodcalc/'
 if flag == 'small':
