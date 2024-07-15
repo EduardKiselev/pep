@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 User = get_user_model()
-
 
 class AnimalType(models.Model):
     title = models.CharField(max_length=50,verbose_name='Название на латинском')
@@ -21,7 +21,7 @@ class Animal(models.Model):
     nursing = models.BooleanField(verbose_name='Является ли питомец кормящей')
     sterilized = models.BooleanField(verbose_name='питомец стерилизован?')
     weight = models.FloatField(
-        verbose_name='Вес',
+        verbose_name='Вес', validators = [MinValueValidator(0.1), MaxValueValidator(100)],
         help_text='Масса питомца, в кг')
     birthday = models.DateField(
         verbose_name='Дата рождения',

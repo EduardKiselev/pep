@@ -1,3 +1,4 @@
+from django.forms.models import BaseModelForm
 from django.shortcuts import render, get_object_or_404, redirect
 from food.models import Food, NutrientsName, NutrientsQuantity
 from calc.forms import FoodForm, NutrinentForm, \
@@ -8,6 +9,8 @@ from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 import ast
+from calc.forms import FoodCreateForm
+from django import forms
 # from django.forms import formset_factory
 
 
@@ -95,12 +98,20 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
 
 class FoodCreateView(CreateView, LoginRequiredMixin):
     model = Food
-    fields = ['description', ]
+    form_class = FoodCreateForm
+    #fields = ['description', ]
     template_name = 'calc/food_create.html'
+    
+    # def get_form_kwargs(self, *args, **kwargs):
+    #     kwargs = super(FoodCreateView, self).get_form_kwargs(*args, **kwargs)
+    #     #kwargs['pk'] = self.kwargs['pk']
+    #     print(kwargs)
+    #     return kwargs
 
     def form_valid(self, form):
         form.instance.ndbNumber = 0
         form.instance.fdcId = 0
+        form.instance.author = self.request.user
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -108,6 +119,44 @@ class FoodCreateView(CreateView, LoginRequiredMixin):
                                description=self.request.POST['description']).id
         return reverse_lazy('food:food_detail',
                             args=(id,))
+
+def food_create(request):
+    template = 'calc/food_create.html'
+    #foodlist = Food.objects.all()
+    form = FoodCreateForm(request.POST or None)
+    if form.is_valid():
+        if len(Food.objects.filter(description=request.POST.get('description'))) == 1:
+            print('DSDFGSDFDDFSDFSDF')
+            form.add_error('description', forms.ValidationError(
+                '''Такой продукт уже существует'''))
+        else:    
+            new_food = Food.objects.create(
+                description=request.POST.get('description'),
+                ndbNumber=0,
+                fdcId=0,
+                author=request.user,
+                )
+            if request.POST.get('based_on'):
+                print('based_on')
+                base_food = get_object_or_404(Food, id=request.POST.get('based_on'))
+                new_food.foodCategory = base_food.foodCategory
+                nutrients = NutrientsQuantity.objects.filter(food=base_food)
+                new_nutr = []
+                for nutr in nutrients:
+                    new_nutr.append(
+                        NutrientsQuantity(food=new_food,
+                                        nutrient=nutr.nutrient,
+                                        amount=nutr.amount))
+                print(new_nutr)
+                NutrientsQuantity.objects.bulk_create(new_nutr)
+            else:
+                print('NONONONONON')
+            return redirect('food:food_detail',new_food.id)       
+        
+    context = {
+        'form': form
+    }
+    return render(request, template, context)
 
 
 @login_required

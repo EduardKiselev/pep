@@ -12,9 +12,9 @@ def auth_user(django_user_model):
     return django_user_model.objects.create(username='auth')
 
 
-@pytest.fixture
-def not_auth_user(django_user_model):
-    return django_user_model.objects.create(username='not_auth')
+# @pytest.fixture
+# def not_auth_user(django_user_model):
+#     return django_user_model.objects.create(username='not_auth')
 
 
 @pytest.fixture
@@ -70,19 +70,19 @@ def pet(animal_owner_user, animal_type):
     )
     return pet
 
+
 @pytest.fixture
 def pet_id(pet):
     return (pet.id,)
 
 
 @pytest.fixture
-def pet_form_data(animal_type,animal_owner_user):
+def pet_form_data(animal_type, animal_owner_user):
     return {
         'name': 'Мурка2',
         'type': animal_type,
         'nursing': True,
         'sterilized': False,
         'weight': 5,
-      # 'owner': animal_owner_user,
         'birthday': '01.01.2024',
     }

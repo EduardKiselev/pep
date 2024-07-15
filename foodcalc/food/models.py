@@ -1,4 +1,7 @@
 from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Food(models.Model):
@@ -6,8 +9,10 @@ class Food(models.Model):
                                    verbose_name='Название продукта')
     ndbNumber = models.IntegerField()
     fdcId = models.IntegerField()
-#    foodCategory = models.CharField(max_length=50)
-
+    foodCategory = models.CharField(default='None', max_length=150)
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        verbose_name='Составитель нутриентов продукта')
     is_published = models.BooleanField(
         default=True,
         verbose_name='Опубликовано',
@@ -50,5 +55,5 @@ class NutrientsQuantity(models.Model):
     amount = models.FloatField(verbose_name='Количество')
 
     def __str__(self):
-        return '&CLASS ' + str(self.food) +\
+        return '&cls ' + str(self.food) +\
             ': ' + str(self.nutrient) + '=' + str(self.amount) + '&'

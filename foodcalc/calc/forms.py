@@ -1,6 +1,9 @@
 from django import forms
 from calc.models import User, NutrientsName
 from animal.models import Animal
+from food.models import Food
+
+import pprint
 
 class PetForm(forms.Form):
     chose_pet = forms.CharField(max_length=150)
@@ -50,7 +53,12 @@ class FormNutrRemove(forms.Form):
 
 
 class AnimalForm(forms.ModelForm):
-    
+
     class Meta:
         model = Animal
         fields = ['name', 'type', 'nursing', 'sterilized', 'weight', 'birthday',]
+
+
+class FoodCreateForm(forms.Form):
+    description = forms.CharField(max_length=150)
+    based_on = forms.ModelChoiceField(queryset=Food.objects.all(), required=False)

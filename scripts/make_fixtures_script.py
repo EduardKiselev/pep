@@ -95,20 +95,21 @@ files = [
     ('FoodData_Central_foundation_food_json_2022-10-28.json', 'FoundationFoods', 'foundation2'),
          ]
 
-if sys.argv:
-    args = sys.argv
-    if len(args)>2:
-        raise TypeError('Too many ARGS')
+args = sys.argv
+if len(args) > 2:
+    raise TypeError('Too many ARGS')
+elif len(args) == 2:
+    if args[1] == '-a':
+        flag = 'all'
+    elif args[1] == '-s':
+        flag = 'small'
+        files = [files[1]]
     else:
-        if args[1] == '-a':
-            flag = 'all'
-        elif args[1] == '-s':
-            flag = 'small'
-            files = [files[1]]
-        else:
-            raise ValueError('No such ARG')
+        raise ValueError('No such ARG')
 else:
     _len=30
+    flag = 'small'
+
 
 for file_info in files:
     print('Start file:',file_info[0])
@@ -152,11 +153,16 @@ for file_info in files:
         current['model'] = 'food.food'
         food_pk += 1
         current['pk'] = food_pk
+        if data[i].get('foodCategory') is not None:
+            category = data[i]['foodCategory']["description"]
+        else:
+            category = 'None'
         current['fields'] = {
             "description": descr,
-            "ndbNumber": data[i].get('ndbNumber',0),
+            "ndbNumber": data[i].get('ndbNumber', 0),
             "fdcId": data[i]['fdcId'],
-        #     "foodCategory": data[i]['foodCategory']["description"],
+            "foodCategory": category,
+            "author": 1
         }
 
         food.append(current)
@@ -264,6 +270,7 @@ for file_info in files:
             print('nutrients_added:', len(nutrients_added))
             print('max_food_len:', max_food_len)
             print('\n\n\n')
+    print('End file:', file_info[0])
 
 #pprint.pp(nutrients_dict)
 

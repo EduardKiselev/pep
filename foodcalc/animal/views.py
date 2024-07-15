@@ -1,9 +1,16 @@
 from django.urls import reverse_lazy, reverse
 from animal.models import Animal
 from django.views.generic import CreateView, UpdateView, DeleteView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django import forms
 from calc.forms import AnimalForm
+from django.shortcuts import redirect
+
+
+class OnlyOwnerMixin(UserPassesTestMixin):
+    def test_func(self):
+        object = self.get_object()
+        return object.owner == self.request.user
 
 
 class AnimalCreateView(LoginRequiredMixin, CreateView):
@@ -36,7 +43,7 @@ class AnimalCreateView(LoginRequiredMixin, CreateView):
         return reverse('calc:profile', args=(self.request.user,))
 
 
-class AnimalUpdateView(LoginRequiredMixin, UpdateView):
+class AnimalUpdateView(OnlyOwnerMixin, UpdateView):
     model = Animal
     form_class = AnimalForm
     template_name = 'animal/create.html'
@@ -63,10 +70,15 @@ class AnimalUpdateView(LoginRequiredMixin, UpdateView):
                             args=(self.request.user,))
 
 
-class AnimalDeleteView(LoginRequiredMixin, DeleteView):
+class AnimalDeleteView(OnlyOwnerMixin, DeleteView):
     model = Animal
     template_name = 'animal/create.html'
 
+    # def get(self, *args, **kwargs):
+    #     print('sdfsdfsdfsdf')
+    #     print(self.request.user)
+    #     return super().get(self, *args, **kwargs)
+    
     def get_success_url(self):
         return reverse_lazy('calc:profile',
                             args=(self.request.user,))
