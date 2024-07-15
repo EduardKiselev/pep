@@ -2,7 +2,7 @@ from django import forms
 from calc.models import User, NutrientsName
 from animal.models import Animal
 from food.models import Food
-
+from django.core.exceptions import ValidationError
 import pprint
 
 class PetForm(forms.Form):
@@ -60,5 +60,6 @@ class AnimalForm(forms.ModelForm):
 
 
 class FoodCreateForm(forms.Form):
-    description = forms.CharField(max_length=150)
-    based_on = forms.ModelChoiceField(queryset=Food.objects.all(), required=False)
+    description = forms.CharField(max_length=150, label='Введите имя продукта')
+    based_on = forms.CharField(max_length=150, required=False)
+    text = forms.CharField(max_length=300)

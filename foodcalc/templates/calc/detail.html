@@ -40,6 +40,9 @@
           </tr>
           {% endfor %}
     {% else %}
+    {% if food.text %}
+    Описание: {{food.text}}
+    {% endif %}
     {% for nutr in nutrients %}
         <tr>
         <td>{{nutr.nutrient.name}}</td>

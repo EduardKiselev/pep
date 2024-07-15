@@ -17,7 +17,7 @@
       <input type="text" list="foodlist" name="food" Placeholder="Введите название продукта" class="form-control" style="width:250px;">
       <datalist id="foodlist">
    {% for results in showfood %}
-          <option value="{{ results.description}}">
+          <option value="{{ results.description}}">{{results.foodCategory}} </option>
    {% endfor %}
       </datalist>
       <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Добавить</a></button>

@@ -12,7 +12,8 @@ import ast
 from calc.forms import FoodCreateForm
 from django import forms
 # from django.forms import formset_factory
-
+from foodcalc.urls import handler403
+from pages.urls import csrf_failure
 
 class FoodDetailView(DetailView):
     model = Food
@@ -101,12 +102,6 @@ class FoodCreateView(CreateView, LoginRequiredMixin):
     form_class = FoodCreateForm
     #fields = ['description', ]
     template_name = 'calc/food_create.html'
-    
-    # def get_form_kwargs(self, *args, **kwargs):
-    #     kwargs = super(FoodCreateView, self).get_form_kwargs(*args, **kwargs)
-    #     #kwargs['pk'] = self.kwargs['pk']
-    #     print(kwargs)
-    #     return kwargs
 
     def form_valid(self, form):
         form.instance.ndbNumber = 0
@@ -120,25 +115,26 @@ class FoodCreateView(CreateView, LoginRequiredMixin):
         return reverse_lazy('food:food_detail',
                             args=(id,))
 
+
 def food_create(request):
     template = 'calc/food_create.html'
-    #foodlist = Food.objects.all()
+    foodlist = Food.objects.all()
     form = FoodCreateForm(request.POST or None)
+    print(form)
     if form.is_valid():
-        if len(Food.objects.filter(description=request.POST.get('description'))) == 1:
-            print('DSDFGSDFDDFSDFSDF')
-            form.add_error('description', forms.ValidationError(
-                '''Такой продукт уже существует'''))
-        else:    
+        if Food.objects.filter(description=request.POST.get('description')).exists():
+            return csrf_failure(request, reason='Продукт с таким именем уже существует')
+        else:
             new_food = Food.objects.create(
                 description=request.POST.get('description'),
+                text=request.POST.get('text'),
                 ndbNumber=0,
                 fdcId=0,
                 author=request.user,
                 )
             if request.POST.get('based_on'):
                 print('based_on')
-                base_food = get_object_or_404(Food, id=request.POST.get('based_on'))
+                base_food = get_object_or_404(Food, description=request.POST.get('based_on'))
                 new_food.foodCategory = base_food.foodCategory
                 nutrients = NutrientsQuantity.objects.filter(food=base_food)
                 new_nutr = []
@@ -151,10 +147,11 @@ def food_create(request):
                 NutrientsQuantity.objects.bulk_create(new_nutr)
             else:
                 print('NONONONONON')
-            return redirect('food:food_detail',new_food.id)       
+            return redirect('food:food_detail', new_food.id)       
         
     context = {
-        'form': form
+        'form': form,
+        'foods': foodlist
     }
     return render(request, template, context)
 
