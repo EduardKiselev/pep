@@ -4,7 +4,6 @@ from food.models import Food, NutrientsName, NutrientsQuantity
 from calc.forms import FoodForm, NutrinentForm, \
     RemoveNutrinentForm, FormNutrAdd, FormNutrRemove
 from django.views.generic import DetailView, CreateView, DeleteView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -14,8 +13,16 @@ from django import forms
 # from django.forms import formset_factory
 from foodcalc.urls import handler403
 from pages.urls import csrf_failure
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-class FoodDetailView(DetailView):
+
+class OnlyAuthorMixin(UserPassesTestMixin):
+    def test_func(self):
+        object = self.get_object()
+        return object.author == self.request.user
+
+
+class FoodDetailView(LoginRequiredMixin, DetailView):
     model = Food
     template_name = 'calc/detail.html'
     pk_url_kwarg = 'food_id'
@@ -38,6 +45,7 @@ class FoodDetailView(DetailView):
         return super().get(*args, **kwargs)
 
 
+@login_required
 def food_search(request, chosen_nutrients=[], mass_dict={}):
     if request.GET:
         if 'nutr_add' in request.GET:
@@ -115,7 +123,7 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
 #         return reverse_lazy('food:food_detail',
 #                             args=(id,))
 
-
+@login_required
 def food_create(request):
     template = 'calc/food_create.html'
     foodlist = Food.objects.all()
@@ -133,7 +141,6 @@ def food_create(request):
                 author=request.user,
                 )
             if request.POST.get('based_on'):
-                print('based_on')
                 base_food = get_object_or_404(Food, description=request.POST.get('based_on'))
                 new_food.foodCategory = base_food.foodCategory
                 nutrients = NutrientsQuantity.objects.filter(food=base_food)
@@ -141,14 +148,12 @@ def food_create(request):
                 for nutr in nutrients:
                     new_nutr.append(
                         NutrientsQuantity(food=new_food,
-                                        nutrient=nutr.nutrient,
-                                        amount=nutr.amount))
-                print(new_nutr)
+                                          nutrient=nutr.nutrient,
+                                          amount=nutr.amount))
                 NutrientsQuantity.objects.bulk_create(new_nutr)
             else:
-                print('NONONONONON')
-            return redirect('food:food_detail', new_food.id)       
-        
+                return redirect('food:food_detail', new_food.id)
+
     context = {
         'form': form,
         'foods': foodlist
@@ -161,6 +166,11 @@ def food_update(request, food_id):
     template = 'calc/food_update.html'
 
     food_instance = get_object_or_404(Food, id=food_id)
+
+    if food_instance.author != request.user:
+        return csrf_failure(
+            request, reason='У вас нет прав для\
+                редактирования этого продукта!')
 
     food_nutrients = NutrientsQuantity.objects.filter(
         food=food_id, nutrient__is_published=True).select_related(
@@ -199,6 +209,7 @@ def food_update(request, food_id):
     return render(request, template, context)
 
 
+@login_required
 def food_search_by_name(request):
     template = 'calc/food_search_by_name.html'
     foodlist = Food.objects.all()
@@ -210,7 +221,7 @@ def food_search_by_name(request):
     return render(request, template, {'foodlist': foodlist, 'form': form})
 
 
-class FoodDeleteView(DeleteView, LoginRequiredMixin):
+class FoodDeleteView(OnlyAuthorMixin, DeleteView):
     model = Food
     template_name = 'calc/food_delete.html'
 

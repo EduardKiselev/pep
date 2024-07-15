@@ -1,17 +1,31 @@
 import pytest
-from animal.pytest_tests.conftest import auth_client,
 from django.test.client import Client
 from food.models import Food, NutrientsName, NutrientsQuantity
+
 
 @pytest.fixture
 def food_author_user(django_user_model):
     return django_user_model.objects.create(username='author')
+
 
 @pytest.fixture
 def author_client(food_author_user):
     client = Client()
     client.force_login(food_author_user)
     return client
+
+
+# @pytest.fixture
+# def user2(django_user_model):
+#     return django_user_model.objects.create(username='user2')
+
+
+# @pytest.fixture
+# def auth_client2(user2):
+#     client = Client()
+#     client.force_login(user2)
+#     return client
+
 
 @pytest.fixture
 def nutr_name():
@@ -32,21 +46,28 @@ def food(food_author_user):
     )
     return food
 
+
+@pytest.fixture
+def food_id(food):
+    return (food.id,)
+
 @pytest.fixture
 def food_nutr(food, nutr_name):
     
     nutr_q = NutrientsQuantity.objects.create(
         food=food,
-        nutrient=nutr_name
-        amount=1.0
+        nutrient=nutr_name,
+        amount=1.0,
     )
     return nutr_q
 
+
 @pytest.fixture
-def food_form_data(food_author_user):
+def food_form_data():
     return {
         'description': 'NewFood',
+        'text': 'newtext',
         'ndbNumber': 2,
         'fdcId': 2,
-        'author': food_author_user,
+
     }

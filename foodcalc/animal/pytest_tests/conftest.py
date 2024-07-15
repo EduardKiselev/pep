@@ -7,14 +7,10 @@ import datetime
 
 User = get_user_model()
 
+
 @pytest.fixture
 def auth_user(django_user_model):
     return django_user_model.objects.create(username='auth')
-
-
-# @pytest.fixture
-# def not_auth_user(django_user_model):
-#     return django_user_model.objects.create(username='not_auth')
 
 
 @pytest.fixture
@@ -53,7 +49,7 @@ def animal_type():
         title='Кошка',
         description='cat'
         )
-    #animal_type = get_object_or_404(AnimalType,title='Кошка')
+    #  animal_type = get_object_or_404(AnimalType,title='Кошка')
     return animal_type
 
 
@@ -77,7 +73,7 @@ def pet_id(pet):
 
 
 @pytest.fixture
-def pet_form_data(animal_type, animal_owner_user):
+def pet_form_data(animal_type):
     return {
         'name': 'Мурка2',
         'type': animal_type,

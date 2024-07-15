@@ -1,9 +1,7 @@
 from django import forms
 from calc.models import User, NutrientsName
 from animal.models import Animal
-from food.models import Food
-from django.core.exceptions import ValidationError
-import pprint
+
 
 class PetForm(forms.Form):
     chose_pet = forms.CharField(max_length=150)
@@ -56,7 +54,8 @@ class AnimalForm(forms.ModelForm):
 
     class Meta:
         model = Animal
-        fields = ['name', 'type', 'nursing', 'sterilized', 'weight', 'birthday',]
+        fields = ['name', 'type', 'nursing',
+                  'sterilized', 'weight', 'birthday', ]
 
 
 class FoodCreateForm(forms.Form):

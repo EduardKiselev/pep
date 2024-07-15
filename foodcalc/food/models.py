@@ -7,7 +7,7 @@ User = get_user_model()
 class Food(models.Model):
     description = models.CharField(max_length=150, unique=True,
                                    verbose_name='Название продукта')
-    text = models.CharField(max_length=300,blank=True)
+    text = models.CharField(max_length=300, blank=True)
     ndbNumber = models.IntegerField()
     fdcId = models.IntegerField()
     foodCategory = models.CharField(default='None', max_length=150)

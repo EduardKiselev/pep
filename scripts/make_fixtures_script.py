@@ -36,7 +36,9 @@ good_nutrients = [
     'Selenium, Se',
     'Zinc, Zn',
     'Vitamin A',
+    'Vitamin A, RAE',
     'Vitamin D3 (cholecalciferol)',
+    'Vitamin D (D2 + D3)',
     'Vitamin E (alpha-tocopherol)',
     'Thiamin',  # B1
     'Riboflavin',  # B2
@@ -59,9 +61,17 @@ calculated = {
     'PUFA 22:6 n-3 (DHA)': 'EPA + DHA (omega-3)',
 }
 
+# # if key not writen yet, use value
+# another_nutr_name_checker = {
+#     'Vitamin D3 (cholecalciferol)' : 'Vitamin D (D2 + D3)',
+
+# }
+
+
+
 nutrients_order = {}
 for i, nutr in enumerate(good_nutrients, 1):
-   nutrients_order[nutr] = i
+   nutrients_order[nutr] = i * 3
 good_nutrients = set(good_nutrients)
 
 
@@ -90,10 +100,10 @@ unit_name_in_DB_dict = {}
 
 files = [
     ('FoodData_Central_sr_legacy_food_json_2021-10-28.json', 'SRLegacyFoods', 'legasy'),
-    ('foundationDownload.json', 'FoundationFoods', 'foundation1'),   
+    ('foundationDownload.json', 'FoundationFoods', 'foundation1'),
     ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods', 'survey'),
     ('FoodData_Central_foundation_food_json_2022-10-28.json', 'FoundationFoods', 'foundation2'),
-         ]
+    ]
 
 args = sys.argv
 if len(args) > 2:
@@ -107,7 +117,7 @@ elif len(args) == 2:
     else:
         raise ValueError('No such ARG')
 else:
-    _len=30
+    _len = 30
     flag = 'small'
 
 
@@ -214,7 +224,7 @@ for file_info in files:
                             nutr_name_pk += 1
                             nutr_name['fields'] = {}
                             nutr_name['fields']['name'] = calc_name  # создание БД имен
-                            nutr_name['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName'] 
+                            nutr_name['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName']
                             unit_name_in_DB_dict[calc_name] = nutr_name['fields']['unit_name']
                             nutr_name['fields']['is_published'] = 1
                             nutr_name['fields']['order'] = nutrients_order[calc_name]
@@ -230,13 +240,11 @@ for file_info in files:
                 current_nutr['fields']['nutrient'] = nutrients_dict[name]
 
                 if name != 'Energy':
-                    # if (data[i]['description'] == 'Pillsbury, Cinnamon Rolls with Icing, refrigerated dough'):
-                    #     print('!!!!!!!!!!!!!!!!!!!!',name,data[i]['foodNutrients'][j]['nutrient']['unitName'],data[i]['foodNutrients'][j].get('amount'))
                     if data[i]['foodNutrients'][j].get('amount') is not None:
                         current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['amount']
                     else:
                         current_nutr['fields']['amount'] = data[i]['foodNutrients'][j]['median']
-                    nutrients.append(current_nutr)   
+                    nutrients.append(current_nutr)
 
                 else:
                     if data[i]['foodNutrients'][j]['nutrient']['unitName'] == 'kcal' and data[i]['description'] not in energy_added:
@@ -292,6 +300,10 @@ seq_of_data = {
             ['growth', 'Котенок'],
             ['reproduction', 'Кошка, кормящяя или беременная']],
 }
+MER_power = {
+    'dog': 0.75,
+    'cat': 0.67
+}
 description = {
     'dog': 'собака',
     'cat': 'кошка'
@@ -326,6 +338,7 @@ for type_animal in seq_of_data:
         pet_stage_pk += 1
         pet_stage['fields'] = {}
         pet_stage['fields']['pet_type'] = animal_type_dict[type_animal]
+        pet_stage['fields']['MER_power'] = MER_power[type_animal]
         
         if 'sterilized' in stage:
             pet_stage['fields']['sterilized'] = True

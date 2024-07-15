@@ -1,4 +1,3 @@
-from http import HTTPStatus
 import pytest
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
@@ -15,6 +14,7 @@ def test_login_redirect(
         pet_id,
         client
 ):
+
     """При попытке перейти на страницу редактирования или удаления питомца
     анонимный пользователь перенаправляется на страницу авторизации.
     """
@@ -26,4 +26,3 @@ def test_login_redirect(
     login_url = reverse('users:login')
     expected_url = f'{login_url}?next={url}'
     assertRedirects(response, expected_url)
-

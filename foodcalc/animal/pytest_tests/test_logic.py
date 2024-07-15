@@ -5,8 +5,10 @@ from http import HTTPStatus
 from calc.forms import AnimalForm
 from pytest_django.asserts import assertRedirects
 
+
 @pytest.mark.django_db
-def test_auth_animal_create(pet_form_data, animal_owner_client, owner_id):
+def test_auth_animal_create(pet_form_data, animal_owner_client):
+
     """Авторизованный пользователь может создать питомца, редирект на профиль
     неавторизованный не может
     """
@@ -23,14 +25,16 @@ def test_auth_animal_create(pet_form_data, animal_owner_client, owner_id):
 
 
 @pytest.mark.django_db
-def test_anonim_pet_create(client, pet_form_data, owner_id):
-    """Неавторизованный пользователь не может создать питомца, редирект на логирование
-    """   
+def test_anonim_pet_create(client, pet_form_data):
+
+    """Неавторизованный пользователь не может создать питомца,
+    редирект на логирование
+    """
     url = reverse('animal:animal_create')
     response = client.post(url, json=pet_form_data)
     login_url = reverse('users:login')
     expected_url = f'{login_url}?next={url}'
-    response = client.post(url, data=pet_form_data)    
+    response = client.post(url, data=pet_form_data)
     assertRedirects(response, expected_url)
     assert response.status_code == HTTPStatus.FOUND
     assert Animal.objects.exists() == 0

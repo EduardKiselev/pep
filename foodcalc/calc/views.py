@@ -14,7 +14,6 @@ import ast
 from pages.urls import csrf_failure
 
 
-
 class RationDetailView(DetailView):
     model = Rations
     template_name = 'calc/detail.html'

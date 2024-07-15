@@ -47,7 +47,6 @@ class AnimalUpdateView(OnlyOwnerMixin, UpdateView):
     model = Animal
     form_class = AnimalForm
     template_name = 'animal/create.html'
-    #fields = ['name', 'type', 'nursing', 'sterilized', 'weight', 'birthday']
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -74,11 +73,6 @@ class AnimalDeleteView(OnlyOwnerMixin, DeleteView):
     model = Animal
     template_name = 'animal/create.html'
 
-    # def get(self, *args, **kwargs):
-    #     print('sdfsdfsdfsdf')
-    #     print(self.request.user)
-    #     return super().get(self, *args, **kwargs)
-    
     def get_success_url(self):
         return reverse_lazy('calc:profile',
                             args=(self.request.user,))
