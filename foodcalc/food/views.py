@@ -97,23 +97,23 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
     return render(request, template, context)
 
 
-class FoodCreateView(CreateView, LoginRequiredMixin):
-    model = Food
-    form_class = FoodCreateForm
-    #fields = ['description', ]
-    template_name = 'calc/food_create.html'
+# class FoodCreateView(CreateView, LoginRequiredMixin):
+#     model = Food
+#     form_class = FoodCreateForm
+#     #fields = ['description', ]
+#     template_name = 'calc/food_create.html'
 
-    def form_valid(self, form):
-        form.instance.ndbNumber = 0
-        form.instance.fdcId = 0
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+#     def form_valid(self, form):
+#         form.instance.ndbNumber = 0
+#         form.instance.fdcId = 0
+#         form.instance.author = self.request.user
+#         return super().form_valid(form)
 
-    def get_success_url(self):
-        id = get_object_or_404(Food,
-                               description=self.request.POST['description']).id
-        return reverse_lazy('food:food_detail',
-                            args=(id,))
+#     def get_success_url(self):
+#         id = get_object_or_404(Food,
+#                                description=self.request.POST['description']).id
+#         return reverse_lazy('food:food_detail',
+#                             args=(id,))
 
 
 def food_create(request):

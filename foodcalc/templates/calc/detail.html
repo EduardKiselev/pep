@@ -11,10 +11,9 @@
       <form>
         <button name = "delete" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Удалить рацион</a></button>
       </form>
-        
       {% else %}
-      {{food.description}}
-    {%endif%}
+        {{food.description}}
+      {%endif%}
   </h2>
     <table class="table  table-sm table-striped table-hover">
         <thead>
@@ -41,7 +40,7 @@
           {% endfor %}
     {% else %}
     {% if food.text %}
-    Описание: {{food.text}}
+    <h3> Описание: {{food.text}} </h3>
     {% endif %}
     {% for nutr in nutrients %}
         <tr>

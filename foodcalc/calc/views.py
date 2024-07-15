@@ -11,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from calc.utils import pet_stage_calculate
 import ast
 # import pprint
+from pages.urls import csrf_failure
+
 
 
 class RationDetailView(DetailView):
@@ -162,7 +164,7 @@ def calc(request, ration=0):
     if chosen_pet:
         tmp = pet_stage_calculate(chosen_pet)
         if not tmp:
-            return redirect('calc:index')
+            return csrf_failure(request, reason='Такой PetStage не существует')
         else:
             pet_stage, weight = tmp
             pet_stage_info = get_object_or_404(PetStage, id=pet_stage.id)
@@ -175,7 +177,7 @@ def calc(request, ration=0):
                     nutr_amount = get_object_or_404(
                         rec_nutr, nutrient_name__name='Energy').nutrient_amount
                     recommended[nutr.nutrient_name] = round(
-                        nutr_amount * (weight)**(0.75), 2)
+                        nutr_amount * (weight)**(pet_stage_info.MER_power), 2)
                 if nutr.nutrient_name.name == 'Water':
                     recommended[nutr.nutrient_name] = ' '
 

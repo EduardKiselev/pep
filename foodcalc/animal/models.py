@@ -47,6 +47,7 @@ class PetStage(models.Model):
     age_finish = models.IntegerField(
         verbose_name='конец стадии',
         help_text='до какого возраста длится эта стадия')
+    MER_power = models.FloatField()
 
     def __str__(self):
         return 'cls ' + str(self.pet_type) + ' ' +\
