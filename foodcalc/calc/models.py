@@ -24,7 +24,9 @@ class Rations(models.Model):
         User, on_delete=models.CASCADE,
         verbose_name='Составитель рациона')
     pet_name = models.CharField(verbose_name='Имя питомца', max_length=50)
-    pet_info = models.ForeignKey(PetStage, on_delete=models.CASCADE)
+    pet_weight = models.FloatField()
+    pet_info = models.ForeignKey(PetStage, verbose_name='Стадия питомца',
+                                 on_delete=models.CASCADE)
     ration_name = models.CharField(verbose_name='Название рациона',
                                    max_length=50)
     ration_comment = models.TextField(verbose_name='комментарий', blank=True)
@@ -42,3 +44,5 @@ class FoodData(models.Model):
     food_name = models.ForeignKey(Food, on_delete=models.CASCADE,
                                   related_name='food')
     weight = models.FloatField()
+
+

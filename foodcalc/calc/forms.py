@@ -11,10 +11,10 @@ class FoodForm(forms.Form):
     food = forms.CharField(max_length=150)
 
 
-class RationNameForm(forms.ModelForm):
+class RationCreateForm(forms.ModelForm):
     class Meta:
         model = Rations
-        fields = ['ration_name', ]
+        fields = ['ration_name', 'ration_comment']
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -22,7 +22,7 @@ class RationNameForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
     def clean(self):
-        cleaned_data = super(RationNameForm, self).clean()
+        cleaned_data = super(RationCreateForm, self).clean()
         print('sdfsdfsdfsdf', cleaned_data, self.request.user)
         ration_name = cleaned_data.get('ration_name')
         if Rations.objects.filter(ration_name=ration_name,

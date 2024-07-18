@@ -60,5 +60,4 @@ class PetStage(models.Model):
     MER_power = models.FloatField()
 
     def __str__(self):
-        return 'cls ' + str(self.pet_type) + ' ' +\
-              str(self.pet_stage) + ' ster:'+str(self.sterilized)
+        return str(self.description)

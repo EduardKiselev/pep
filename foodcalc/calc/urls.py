@@ -15,10 +15,9 @@ urlpatterns = [
     path('ration_delete/<int:ration_id>',
          views.RationDeleteView.as_view(),
          name='ration_delete'),
-    path('export/',
-         views.data_export,
-         name='export'),
-    path('import/',
-         views.data_import,
-         name='import'),
+    path('export/', views.data_export, name='export'),
+    path('import/', views.data_import, name='import'),
+    path('rations/', views.SearchRationListView.as_view(),
+         name='ration_list')
+     
 ]

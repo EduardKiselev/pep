@@ -21,6 +21,7 @@
       <p>
       <a class="btn btn-sm text-muted" href="{% url 'animal:animal_create' %}">Добавить питомца</a>
       <a class="btn btn-sm text-muted" href="{% url 'food:food_create' %}">Добавить продукт</a>
+      <a class="btn btn-sm text-muted" href="{% url 'calc:ration_list' %}">Поиск в рационах</a>
       </p>
     </ul>   
     <ul class="list-group list-group-horizontal justify-content-center">  
@@ -54,6 +55,10 @@
       <li>{{food.food_name.description}}: {{food.weight}} gr</li>
       {% endif %}
       {% endfor %}
+      {% if ration.ration_comment %}
+       <i> комментарий: {{ration.ration_comment }} </i>
+      {% endif %}
+
       </ul>
       <form method='GET'>
         <button name = {{ration.id}} type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Подробнее</a></button>

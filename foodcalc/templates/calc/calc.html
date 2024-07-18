@@ -4,6 +4,7 @@
 {% load get_type%}
 {% load dict_key%}
 {% load age %}
+{% load django_bootstrap5 %}
 
 {% block title %}
   Калькулятор
@@ -150,18 +151,25 @@
     </table>
     {% endif %}
     {% if chosen_pet and items_name %}
-    {% comment %} <form method='POST'>
-      {% csrf_token %} 
-      <button name = "make_file" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">создать файл</a></button>
-    </form> {% endcomment %}
-
+<div class='row'>
+  <div class='col-md-6'>
     <form method='POST'>
+      {% csrf_token %} 
+      {% bootstrap_form ration_form %}
+      {% bootstrap_button button_type="submit" content="Создать рацион" %}
+      {% comment %} <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">создать файл</a></button> {% endcomment %}
+    </form> 
+  </div>
+</div>
+
+
+    {% comment %} <form method='POST'>
       {% csrf_token %}
       
       <input type="text" name="ration_name" Placeholder="Название рациона" class="form-control" style="width:200px;">
       <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Сохранить рацион</a></button>
       
-    </form>
+    </form> {% endcomment %}
 
     {% endif %}
 {% endblock %}

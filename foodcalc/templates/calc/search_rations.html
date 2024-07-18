@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<div class='row'>
+    <div class='col-md-6'>
+    <form action="" method="get">
+        {% bootstrap_form filter.form %}
+        <button type="submit"  class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Искать</a></button>
+    </form>
+</div>
+</div>
+    <ul class="list-group list-group-flush">
+    {% for obj in filter.qs %}
+    <li class="list-group list-group-flush">  <a href="{% url 'calc:ration_detail' obj.id %}" class="list-group-item list-group-item-action">
+        <h3>{{ obj.ration_name }} </h3>
+        <p>{{ obj.pet_info.description }}; вес, кг: {{ obj.pet_weight }} </p>
+        
+    {% if obj.ration_comment %}
+       <i> Комментарий: {{obj.ration_comment }} </i>
+    </a>
+{% endif%} </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

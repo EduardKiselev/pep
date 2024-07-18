@@ -15,9 +15,7 @@ def pet_stage_calculate(animal):
     nursing = animal.nursing
     sterilized = animal.sterilized
 
-    today = (datetime.now() - datetime(1970, 1, 1)).days
-    birthday1 = (birthday - datetime.date(1970, 1, 1)).days
-    age = round((today-birthday1)/30.5, 1)
+    age = round((datetime.now().date()-birthday).days/30.41, 1)
 
     pet_stage = PetStage.objects.filter(
         sterilized=sterilized,

@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'calc.apps.CalcConfig',
     'animal.apps.AnimalConfig',
     'food.apps.FoodConfig',
+    'django_filters',
     'django_bootstrap5',
     'debug_toolbar',
 ]
