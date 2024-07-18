@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-
+{% load django_bootstrap5 %}
 
 {% block content %}
     <h2>
       {% if 'ration' in request.path %}
-      {{ration.ration_name}}
+      {{object.ration_name}}
       <form>
         <button name = "open_in_calc" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Открыть рацион в калькуляторе</a></button>
       </form>
@@ -49,8 +49,16 @@
         </tr>
     {% endfor %}
     {% endif %}
-      </tbody>
+      </tbody>  
     </table>
+    {% if 'ration' in request.path %} 
+    <form method='post'>
+      {% csrf_token %}
+    {% bootstrap_form form %}
+    {% bootstrap_button button_type="submit" content="Сохранить" %}
+    </form>
+    {% endif %}
+
     {% if 'food/detail' in request.path %}
     <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
       href="{% url 'food:food_update' food.id%}"> Редактировать данные о продукте</a></button>

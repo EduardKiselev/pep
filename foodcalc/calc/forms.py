@@ -105,3 +105,10 @@ class FoodCreateForm(forms.Form):
 
 class FileForm(forms.Form):
     file_name = forms.CharField()
+
+
+class RationCommentForm(forms.ModelForm):
+    
+    class Meta:
+        model = Rations
+        fields = ("ration_comment",)

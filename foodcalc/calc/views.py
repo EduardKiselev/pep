@@ -4,8 +4,8 @@ from calc.models import User, RecommendedNutrientLevelsDM, \
 from animal.models import Animal, PetStage
 from food.models import Food, NutrientsName, NutrientsQuantity
 from calc.forms import FoodForm, RemoveFoodForm, ProfileForm, \
-    PetForm, RationCreateForm, FileForm
-from django.views.generic import DetailView,  DeleteView
+    PetForm, RationCreateForm, FileForm, RationCommentForm
+from django.views.generic import DetailView,  DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from calc.utils import pet_stage_calculate, import_from_file, export_to_file
@@ -17,10 +17,12 @@ from django_filters.views import FilterView
 from calc.filters import RationFilter
 
 
-class RationDetailView(DetailView):
+
+class RationDetailView(UpdateView):
     model = Rations
     template_name = 'calc/detail.html'
     pk_url_kwarg = 'ration_id'
+    fields = ['ration_comment']
 
     def get(self, *args, **kwargs):
         if 'open_in_calc' in self.request.GET:
@@ -41,10 +43,19 @@ class RationDetailView(DetailView):
             'food_name', 'ration').filter(
             ration__id=self.kwargs.get(self.pk_url_kwarg))
         context['food_data'] = food_data
-        context['ration'] = get_object_or_404(Rations,
-                                              id=self.kwargs.get(
-                                                  self.pk_url_kwarg))
+        # context['ration'] = get_object_or_404(Rations,
+        #                                       id=self.kwargs.get(
+        #                                           self.pk_url_kwarg))
+        # print(context)
+        # form = RationCommentForm()
+        # context['form'] = form
         return context
+    
+    def get_success_url(self):
+        print(self.request.user.username)
+        return reverse_lazy('calc:profile',
+                            args=(self.request.user.username,))
+
 
 
 class RationDeleteView(DeleteView):
