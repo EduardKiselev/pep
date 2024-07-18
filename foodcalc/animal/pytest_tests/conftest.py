@@ -46,10 +46,9 @@ def animal_owner_client(animal_owner_user):
 @pytest.fixture
 def animal_type():
     animal_type = AnimalType.objects.create(
-        title='Кошка',
+        title='cat',
         description='cat'
         )
-    #  animal_type = get_object_or_404(AnimalType,title='Кошка')
     return animal_type
 
 
@@ -75,7 +74,7 @@ def pet_id(pet):
 @pytest.fixture
 def pet_form_data(animal_type):
     return {
-        'name': 'Мурка2',
+        'name': 'Murka',
         'type': animal_type,
         'nursing': True,
         'sterilized': False,

@@ -29,6 +29,12 @@ class Rations(models.Model):
                                    max_length=50)
     ration_comment = models.TextField(verbose_name='комментарий', blank=True)
 
+    def __str__(self):
+        return str(self.ration_name) + '_' + str(self.owner.username)
+
+    class Meta:
+        unique_together = [['owner', 'ration_name'], ]
+
 
 class FoodData(models.Model):
     ration = models.ForeignKey(Rations, on_delete=models.CASCADE,

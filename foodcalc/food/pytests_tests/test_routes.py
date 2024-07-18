@@ -9,14 +9,10 @@ from pytest_django.asserts import assertRedirects
              'food:func',
              'food:food_search_by_name')
 )
-def test_login_redirect(
+def test_login_redirect_for_anonim(
         name,
         client
 ):
-
-    """При попытке перейти на страницу создания и поиска еды,
-    анонимный пользователь перейдет на страницу логина. 
-    """
     url = reverse(name)
     response = client.get(url)
     login_url = reverse('users:login')
@@ -33,10 +29,11 @@ def test_food_pages_for_auth_user(
         name,
         author_client
 ):
-    """Залогиненному пользователю доступны страницы"""
+    """Залогиненному пользователю доступны страницы."""
     url = reverse(name)
     response = author_client.get(url)
     assert response.status_code == HTTPStatus.OK
+
 
 @pytest.mark.parametrize(
     'name', ('food:food_update',
@@ -48,8 +45,6 @@ def test_update_delete_for_anonimus_user(
         client,
         food_id
 ):
-    """Неавторизованный при попытке удалить или редактировать
-    попадает на страницу логирования."""
     url = reverse(name, args=food_id)
     response = client.get(url)
     login_url = reverse('users:login')
@@ -70,7 +65,9 @@ def test_food_detail(
         food_id,
         client
 ):
-    """При попытке перейти на страницу продукта,
+    """Тест food_detail.
+
+    При попытке перейти на страницу продукта,
     анонимный пользователь перейдет на страницу логина.
     авторизованный просмотрит страницу
     """

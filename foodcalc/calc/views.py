@@ -1,17 +1,18 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from calc.models import User, RecommendedNutrientLevelsDM, \
-    PetStage, Rations, FoodData
-from animal.models import Animal
+    Rations, FoodData
+from animal.models import Animal, PetStage
 from food.models import Food, NutrientsName, NutrientsQuantity
 from calc.forms import FoodForm, RemoveFoodForm, ProfileForm, \
-    PetForm, RationNameForm
+    PetForm, RationNameForm, FileForm
 from django.views.generic import DetailView,  DeleteView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
-from calc.utils import pet_stage_calculate
+from calc.utils import pet_stage_calculate, import_from_file, export_to_file
 import ast
 # import pprint
 from pages.urls import csrf_failure
+from pathlib import Path
 
 
 class RationDetailView(DetailView):
@@ -99,7 +100,6 @@ def calc(request, ration=0):
                     chosen_pet = None
             except Animal.DoesNotExist:
                 chosen_pet = None
-
     else:
         chosen_food = []
         mass_dict = {}
@@ -109,6 +109,7 @@ def calc(request, ration=0):
         for elem in instance:
             chosen_food.append(elem.food_name.id)
             mass_dict[elem.food_name.id] = elem.weight
+        return redirect(reverse('calc:calc', args=(0,)))
 
     print('chosen_food:', chosen_food)
     print('mass_dict:', mass_dict)
@@ -148,7 +149,7 @@ def calc(request, ration=0):
             if 'mass_' + str(food_id) in request.POST.keys():
                 if request.POST['mass_' + str(food_id)]:
                     mass = float(request.POST['mass_' + str(food_id)])
-                    if mass > 0:
+                    if mass >= 0:
                         mass_dict[food_id] = mass
 
     foodlist = Food.objects.exclude(id__in=chosen_food)
@@ -183,7 +184,7 @@ def calc(request, ration=0):
     # Food
     if chosen_food:
         mass_dict[0] = 0
-        mass_dict[0] = sum(mass_dict.values())
+        mass_dict[0] = sum(mass_dict.values())+0.0001
 
         # Totals
         for food_id in chosen_food:
@@ -249,7 +250,8 @@ def calc(request, ration=0):
         }
 
     if 'ration_name' in request.POST.keys():
-        form = RationNameForm(request.POST or None)
+        print(request.POST)
+        form = RationNameForm(request.POST, request=request)
         if form.is_valid():
             ration_instance = Rations.objects.create(
                 pet_name=chosen_pet.name, pet_info=pet_stage,
@@ -258,15 +260,19 @@ def calc(request, ration=0):
             foods = (FoodData(
                 ration=ration_instance, food_name=food,
                 weight=mass_dict[food.id]) for food in food_instance)
-        FoodData.objects.bulk_create(foods)
-
-        return redirect('calc:profile', username=request.user)
+            FoodData.objects.bulk_create(foods)
+            return redirect('calc:profile', username=request.user)
+        else:
+            return csrf_failure(
+                request, reason='У вас уже есть рацион с таким названием')
 
     response = render(request, template, context)
     response.set_cookie(key='chosen_food', value=chosen_food)
     response.set_cookie(key='mass_dict', value=mass_dict)
     if chosen_pet:
         response.set_cookie(key='chosen_pet', value=chosen_pet.id)
+    print(context.get('ration'))
+
     return response
 
 
@@ -310,3 +316,22 @@ def recnutrlvl(request):
         'nutrients_name': nutrients_name
     }
     return render(request, template, context)
+
+
+def data_export(request):
+    template = 'calc/export.html'
+    if request.GET:
+        user = request.user
+        export_to_file(user)
+    return render(request, template, {})
+
+
+def data_import(request):
+    template = 'calc/export.html'
+    form = FileForm(request.POST or None)
+    if form.is_valid():  # and request.user.is_staff:
+        file = str(Path(__file__).resolve().parent.parent) +\
+            '/files/'+form.cleaned_data['file_name']
+        user = request.user
+        import_from_file(file, user)
+    return render(request, template, {})

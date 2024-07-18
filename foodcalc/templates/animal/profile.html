@@ -12,9 +12,22 @@
     </ul>
     <ul class="list-group list-group-horizontal justify-content-center">
       {% if user.is_authenticated and request.user == profile %}
+      <p>
       <a class="btn btn-sm text-muted" href="{% url 'calc:edit_profile' %}">Редактировать профиль</a>
       <a class="btn btn-sm text-muted" href="{% url 'password_change' %}">Изменить пароль</a>
-      <a class="btn btn-sm text-muted" href="{% url 'animal:animal_create' %}">Добавить питомца</a>  
+      </p>
+    </ul> 
+    <ul class="list-group list-group-horizontal justify-content-center">
+      <p>
+      <a class="btn btn-sm text-muted" href="{% url 'animal:animal_create' %}">Добавить питомца</a>
+      <a class="btn btn-sm text-muted" href="{% url 'food:food_create' %}">Добавить продукт</a>
+      </p>
+    </ul>   
+    <ul class="list-group list-group-horizontal justify-content-center">  
+      <p>
+      <a class="btn btn-sm text-muted" href="{% url 'calc:export' %}">Экспорт данных</a>
+      <a class="btn btn-sm text-muted" href="{% url 'calc:import' %}">Импорт данных</a>
+      </p> 
       {% endif %}
     </ul>
   </small>

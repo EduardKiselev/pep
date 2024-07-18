@@ -1,5 +1,8 @@
 import json, os, sys, pprint
 
+import_files = ['user_export2024-07-17.json',]
+USER_ID = [100,]
+
 
 good_nutrients = [
     'Water',
@@ -321,7 +324,7 @@ for type in seq_of_data:
     animal_type_dict[type] = animal_pk
     animal_pk += 1
     animal_type['fields'] = {}
-    animal_type['fields']['title'] = description[type]
+    animal_type['fields']['title'] = type
     animal_type['fields']['description'] = description[type]
     animal_types.append(animal_type)
 
@@ -473,9 +476,51 @@ user = [{"model": "auth.user", "pk": 1,
               "user_permissions": []}}]
 
 
-
-output = nutr_name_list + food + nutrients +\
+food_data_output = nutr_name_list + food + nutrients +\
      animal_types + pet_stages + recommendednutrientlevels + user
+
+# from export fixtures
+convert_nutrients_name = {}  # key: in export, value: in fixtures
+convert_animaltype = {} #
+convert_petstage = {}
+user_food_list = []
+user_rations_list = []
+user_nutr_quan_list = []
+user_animal_list = []
+index = -1
+for file in import_files:
+    index += 1
+    with open(file, 'r') as input_file:
+        all_data = json.load(input_file)
+        for data in all_data:
+            if data['model'] == 'food.nutrientsname':
+                convert_nutrients_name[data['pk']] = nutrients_dict[data['fields']['name']] 
+            if data['model'] == 'animal.animaltype':
+                for elem in animal_types:
+                    if data['fields'] == elem['fields']:
+                        convert_animaltype[data['pk']] = elem['pk']
+                        break
+            if data['model'] == "animal.petstage":
+                for elem in pet_stages:
+                    if data['fields'] == elem['fields']:
+                        convert_petstage[data['pk']] = elem['pk']
+        for data in all_data:
+            if data['model'] == 'food.food':
+                data['pk'] = food_pk
+                food_pk += 1
+                data['fields']['author'] = USER_ID[index]
+                user_food_list.append(data)
+                #need change author!!!!
+            if data['model'] == 'food.rations':
+                    
+                
+
+                
+print(convert_nutrients_name)
+print(convert_animaltype)
+print(convert_petstage)
+
+
 print('Writing Data')
 write_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/foodcalc/'
 if flag == 'small':
@@ -484,5 +529,5 @@ elif flag == 'all':
     filename = 'all_data.json'
 
 with open(write_dir+filename, 'w') as file:
-    json.dump(output, file)
+    json.dump(food_data_output, file, ensure_ascii=False)
 

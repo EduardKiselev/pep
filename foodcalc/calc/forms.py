@@ -1,5 +1,5 @@
 from django import forms
-from calc.models import User, NutrientsName
+from calc.models import User, NutrientsName, Rations
 from animal.models import Animal
 
 
@@ -11,8 +11,24 @@ class FoodForm(forms.Form):
     food = forms.CharField(max_length=150)
 
 
-class RationNameForm(forms.Form):
-    ration_name = forms.CharField(max_length=50)
+class RationNameForm(forms.ModelForm):
+    class Meta:
+        model = Rations
+        fields = ['ration_name', ]
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        print(self.request.user)
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super(RationNameForm, self).clean()
+        print('sdfsdfsdfsdf', cleaned_data, self.request.user)
+        ration_name = cleaned_data.get('ration_name')
+        if Rations.objects.filter(ration_name=ration_name,
+                                  owner=self.request.user).exists():
+            raise forms.ValidationError(
+                {'ration_name': 'У вас уже есть ацион с таким названием', })
 
 
 class RemoveFoodForm(forms.Form):
@@ -42,6 +58,11 @@ class FoodNameForm(forms.Form):
 
 
 class FormNutrAdd(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        self.chooses = kwargs.pop('choses', None)
+        super().__init__(*args, **kwargs)
+
     nutrient = forms.ModelChoiceField(queryset=NutrientsName.objects.none())
     amount = forms.FloatField()
 
@@ -51,14 +72,36 @@ class FormNutrRemove(forms.Form):
 
 
 class AnimalForm(forms.ModelForm):
-
     class Meta:
         model = Animal
         fields = ['name', 'type', 'nursing',
                   'sterilized', 'weight', 'birthday', ]
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        print(self.request.user)
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('sterilized') and cleaned_data.get('nursing'):
+            raise forms.ValidationError(
+                {'nursing': '''Не возможно быть одновременно стерилизованным
+                 и кормящим/беременным''',
+                 'sterilized': '''Не возможно быть одновременно стерилизованным
+                 и кормящим/беременным'''
+                 })
+        name = cleaned_data.get('name')
+        if Animal.objects.filter(name=name, owner=self.request.user).exists():
+            raise forms.ValidationError(
+                {'name': 'У вас уже есть питомец с этим именем', })
+
 
 class FoodCreateForm(forms.Form):
     description = forms.CharField(max_length=150, label='Введите имя продукта')
     based_on = forms.CharField(max_length=150, required=False)
-    text = forms.CharField(max_length=300)
+    text = forms.CharField(max_length=300, required=False)
+
+
+class FileForm(forms.Form):
+    file_name = forms.CharField()

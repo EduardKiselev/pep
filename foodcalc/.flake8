@@ -6,14 +6,21 @@
 # D104 Missing docstring in public package
 # D105 Missing docstring in magic method
 # D106 Missing docstring in magic method
-extend-ignore = D100,D101, D102, D103, D104, D105, D106
+# D107 Missing docstring in __init__
+extend-ignore = D100,D101, D102, D103, D104, D105, D106, D107
 
 per-file-ignores =
+    ./food/pytests_tests/test_logic.py: F401
     # E501 line too long (81 > 79 characters)
     ./calc/migrations/0001_initial.py: E501
     ./animal/migrations/0001_initial.py: E501
     ./food/migrations/0001_initial.py: E501
+    ./animal/migrations/0005_auto_20240717_0514.py: E501
+    ./animal/migrations/0002_auto_20240715_0248.py: E501
+    ./food/migrations/0002_auto_20240715_0248.py: E501
     # E501 line too long (81 > 79 characters)
     ./foodcalc/settings.py: E501
     # N815 variable '' in class scope should not be mixedCase
     ./food/models.py: N815
+    # F811 redefinition of unused 'auth_client' from line 6
+    ./food/pytests_tests/test_logic.py: F811

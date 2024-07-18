@@ -9,7 +9,7 @@ urlpatterns = [
           name='food_detail'),
      path('func/', views.food_search, name='func'),
      path('create/', views.food_create,
-          name='food_create'),        
+          name='food_create'),
      path('update/<int:food_id>/', views.food_update,
           name='food_update'),
      path('search_by_name/', views.food_search_by_name,

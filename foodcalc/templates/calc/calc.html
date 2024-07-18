@@ -157,8 +157,9 @@
 
     <form method='POST'>
       {% csrf_token %}
+      
       <input type="text" name="ration_name" Placeholder="Название рациона" class="form-control" style="width:200px;">
-      <button type="submit" name='pet_reset' class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Сохранить рацион</a></button>
+      <button type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Сохранить рацион</a></button>
       
     </form>
 

@@ -1,17 +1,12 @@
-from django.forms.models import BaseModelForm
 from django.shortcuts import render, get_object_or_404, redirect
 from food.models import Food, NutrientsName, NutrientsQuantity
-from calc.forms import FoodForm, NutrinentForm, \
+from calc.forms import FoodForm, NutrinentForm, FoodCreateForm,\
     RemoveNutrinentForm, FormNutrAdd, FormNutrRemove
-from django.views.generic import DetailView, CreateView, DeleteView
+from django.views.generic import DetailView, DeleteView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 import ast
-from calc.forms import FoodCreateForm
-from django import forms
-# from django.forms import formset_factory
-from foodcalc.urls import handler403
 from pages.urls import csrf_failure
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
@@ -47,6 +42,17 @@ class FoodDetailView(LoginRequiredMixin, DetailView):
 
 @login_required
 def food_search(request, chosen_nutrients=[], mass_dict={}):
+    nutrients = request.COOKIES.get('chosen_nutrients')
+    mass = request.COOKIES.get('mass_dict')
+    if nutrients is None:
+        chosen_nutrients = []
+    else:
+        chosen_nutrients = ast.literal_eval(nutrients)
+    if mass is None:
+        mass_dict = {}
+    else:
+        mass_dict = ast.literal_eval(mass)
+
     if request.GET:
         if 'nutr_add' in request.GET:
             form = NutrinentForm(request.GET or None)
@@ -63,7 +69,7 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
                 id = get_object_or_404(NutrientsName, name=nutr_to_remove).id
                 index = chosen_nutrients.index(id)
                 chosen_nutrients.pop(index)
-                del mass_dict[id]
+                mass_dict.pop(id, None)
     if request.POST:
         for nutrient_id in chosen_nutrients:
             if str(nutrient_id) in request.POST.keys():
@@ -86,7 +92,7 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
             for object in objects:
                 totals[object.food] = round(
                     totals.get(object.food, 0) +
-                    mass_dict[nutrient] * object.amount, 2)
+                    mass_dict.get(nutrient, 0) * object.amount, 2)
                 nutrients[nutrient][object.food] = object.amount
         all_food = sorted(totals.items(), key=lambda x: x[1],
                           reverse=True)[:75]
@@ -102,7 +108,11 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
                'mass_dict': mass_dict}
     if chosen_nutrients:
         context |= add_context
-    return render(request, template, context)
+
+    response = render(request, template, context)
+    response.set_cookie(key='chosen_nutrients', value=chosen_nutrients)
+    response.set_cookie(key='mass_dict', value=mass_dict)
+    return response
 
 
 # class FoodCreateView(CreateView, LoginRequiredMixin):
@@ -128,10 +138,11 @@ def food_create(request):
     template = 'calc/food_create.html'
     foodlist = Food.objects.all()
     form = FoodCreateForm(request.POST or None)
-    print(form)
     if form.is_valid():
-        if Food.objects.filter(description=request.POST.get('description')).exists():
-            return csrf_failure(request, reason='Продукт с таким именем уже существует')
+        if Food.objects.filter(
+                description=form.cleaned_data.get('description')).exists():
+            return csrf_failure(request,
+                                reason='Продукт с таким именем уже существует')
         else:
             new_food = Food.objects.create(
                 description=request.POST.get('description'),
@@ -141,7 +152,8 @@ def food_create(request):
                 author=request.user,
                 )
             if request.POST.get('based_on'):
-                base_food = get_object_or_404(Food, description=request.POST.get('based_on'))
+                base_food = get_object_or_404(
+                    Food, description=form.cleaned_data.get('based_on'))
                 new_food.foodCategory = base_food.foodCategory
                 nutrients = NutrientsQuantity.objects.filter(food=base_food)
                 new_nutr = []
@@ -180,6 +192,7 @@ def food_update(request, food_id):
     base_queryset = all_nutrients.values('id', 'name', 'unit_name').filter(
             is_published=True)
     form_queryset = base_queryset.values_list('name', 'unit_name')
+
     form_add = FormNutrAdd()
     form_add.fields['nutrient'].queryset = form_queryset.exclude(
         name__in=nutr_names_already_added)
@@ -188,6 +201,12 @@ def food_update(request, food_id):
         name__in=nutr_names_already_added)
 
     if request.POST:
+        print(request.POST)
+        # new_form=FormNutrAdd(request.POST)
+        # print(new_form)
+        # print(new_form.errors.as_text())
+        # if FormNutrAdd(request.POST).is_valid():
+        #     print('sadfgsdfgsdf')
         if 'amount' in request.POST and float(request.POST['amount']) > 0:
             nutr_to_add = get_object_or_404(
                 all_nutrients,

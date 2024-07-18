@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+Экспорт
+{% endblock %}
+{% block content %}
+    {% if 'export' in request.path %}
+    <h2>  Экспортировать все ваши данные в файл?</h2>
+    <form>
+    <button type="submit" name='export' class="btn btn-outline-primary"> Да!</button>
+    </form>
+    {% else %}
+    <h2>  Импорт. Файл должен находиться в папке /files</h2>
+    <form method='POST'>
+        {% csrf_token %}
+    <input type="text" name="file_name" Placeholder="Введите имя файла с данными" class="form-control" style="width:300px;">
+    <div>
+    <button type="submit" name='export' class="btn btn-outline-primary"> Начать импорт</button>
+    </div>
+    </form>  
+    {% endif %}
+    {% endblock %}
