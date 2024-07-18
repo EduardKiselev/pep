@@ -44,9 +44,10 @@
                   href="{% url 'animal:animal_create' %}"> Добавить питомца</a></button>             
               <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
                     href="{% url 'food:food_create' %}"> Добавить продукт</a></button> 
-                
-              <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-                  href="{% url 'logout' %}">Выйти</a></button>
+                <form action="{% url 'logout' %}" method="post">
+                      {% csrf_token %}
+                      <button class="btn btn-outline-primary"><a class="text-decoration-none text-reset" type="button">Выйти</button>
+                  </form>   
               {% if user.is_staff %}
               <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
                 href="/admin">Админка</a></button>

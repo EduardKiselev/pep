@@ -7,8 +7,8 @@ from calc.models import Rations
 @admin.register(Food)
 class FoodAdmin(admin.ModelAdmin):
     list_display = ('description', 'ndbNumber',
-                    'fdcId',  'is_published')
-    list_editable = ('is_published', )
+                    'fdcId',  'is_published', 'author', 'text')
+    list_editable = ('is_published', 'author','text')
     search_fields = ('description',)
     list_filter = ('is_published',)
 
@@ -42,7 +42,9 @@ class Animal(admin.ModelAdmin):
 
 @admin.register(Rations)
 class Rations(admin.ModelAdmin):
-    list_display = ('ration_name', 'owner', 'pet_info',)
+    list_display = ('ration_name', 'owner', 'pet_info',
+                    'ration_comment', 'pet_weight')
+    list_editable = ('owner', 'ration_comment', 'pet_weight')
 
 
 admin.site.empty_value_display = 'Не задано'
