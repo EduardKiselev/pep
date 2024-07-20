@@ -19,5 +19,4 @@ urlpatterns = [
     path('import/', views.data_import, name='import'),
     path('rations/', views.SearchRationListView.as_view(),
          name='ration_list')
-     
 ]

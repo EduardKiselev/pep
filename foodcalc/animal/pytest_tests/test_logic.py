@@ -58,9 +58,10 @@ def test_animal_create_sterilized_nursing(pet_form_data,
     pet_form_data['nursing'] = 1
     request = RequestFactory().post(url)
     request.user = auth_user
-    form = AnimalForm(pet_form_data, request=request)
+    kwargs = {}
+    kwargs['initial'] = {'request': request}
+    form = AnimalForm(pet_form_data, **kwargs)
     assert form.is_valid() is False
-    print(form.errors.keys())
     assert 'sterilized' in form.errors.keys()
     auth_client.post(url, data=pet_form_data)
     assert Animal.objects.exists() is False
@@ -74,7 +75,9 @@ def test_animal_create_same_name(pet, pet_form_data, animal_owner_client,
     pet_form_data['name'] = pet.name
     request = RequestFactory().post(url)
     request.user = animal_owner_user
-    form = AnimalForm(pet_form_data, request=request)
+    kwargs = {}
+    kwargs['initial'] = {'request': request}
+    form = AnimalForm(pet_form_data, **kwargs)
     assert form.is_valid() is False
     animal_owner_client.post(url, data=pet_form_data)
     assert Animal.objects.count() == 1

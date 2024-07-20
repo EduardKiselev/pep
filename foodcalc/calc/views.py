@@ -8,14 +8,13 @@ from calc.forms import FoodForm, RemoveFoodForm, ProfileForm, \
 from django.views.generic import DetailView,  DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
-from calc.utils import pet_stage_calculate, import_from_file, export_to_file
-import ast
+from calc.utils import pet_stage_calculate, import_from_file, \
+    export_to_file, initialize
 # import pprint
 from pages.urls import csrf_failure
 from pathlib import Path
 from django_filters.views import FilterView
 from calc.filters import RationFilter
-
 
 
 class RationDetailView(UpdateView):
@@ -43,19 +42,12 @@ class RationDetailView(UpdateView):
             'food_name', 'ration').filter(
             ration__id=self.kwargs.get(self.pk_url_kwarg))
         context['food_data'] = food_data
-        # context['ration'] = get_object_or_404(Rations,
-        #                                       id=self.kwargs.get(
-        #                                           self.pk_url_kwarg))
-        # print(context)
-        # form = RationCommentForm()
-        # context['form'] = form
         return context
-    
+
     def get_success_url(self):
         print(self.request.user.username)
         return reverse_lazy('calc:profile',
                             args=(self.request.user.username,))
-
 
 
 class RationDeleteView(DeleteView):
@@ -100,40 +92,8 @@ def profile(request, username):
 @login_required
 def calc(request, ration=0):
     template = 'calc/calc.html'
-    if ration == 0:
-        foods = request.COOKIES.get('chosen_food')
-        mass = request.COOKIES.get('mass_dict')
-        pet = request.COOKIES.get('chosen_pet')
-        if foods is None:
-            chosen_food = []
-        else:
-            foods = ast.literal_eval(foods)
-            chosen_food = foods
-        if mass is None:
-            mass_dict = {}
-        else:
-            mass = ast.literal_eval(mass)
-            mass_dict = mass
-        if pet is None:
-            chosen_pet = None
-        else:
-            foods = ast.literal_eval(pet)
-            try:
-                chosen_pet = Animal.objects.get(id=pet)
-                if chosen_pet.owner != request.user:
-                    chosen_pet = None
-            except Animal.DoesNotExist:
-                chosen_pet = None
-    else:
-        chosen_food = []
-        mass_dict = {}
-        chosen_pet = None
-        instance = FoodData.objects.filter(
-            ration=ration).select_related('food_name')
-        for elem in instance:
-            chosen_food.append(elem.food_name.id)
-            mass_dict[elem.food_name.id] = elem.weight
-        return redirect(reverse('calc:calc', args=(0,)))
+    
+    mass_dict, chosen_food, chosen_pet = initialize(ration, request)
 
     print('chosen_food:', chosen_food)
     print('mass_dict:', mass_dict)
@@ -252,7 +212,7 @@ def calc(request, ration=0):
         if chosen_pet:
             on_dry_matter['Energy'] = totals.get('Energy', 1)
 
-    #RationSave
+    # RationSave
     ration_form = RationCreateForm(request.POST or None, request=request)
     if ration_form.is_valid():
         ration_instance = Rations.objects.create(
@@ -268,23 +228,6 @@ def calc(request, ration=0):
                           weight=mass_dict[food.id]) for food in food_instance)
         FoodData.objects.bulk_create(foods)
         return redirect('calc:profile', username=request.user)
-
-    # if 'ration_name' in request.POST.keys():
-    #     print(request.POST)
-    #     form = RationCreateForm(request.POST, request=request)
-    #     if form.is_valid():
-    #         ration_instance = Rations.objects.create(
-    #             pet_name=chosen_pet.name, pet_info=pet_stage, pet_weight=chosen_pet.weight,
-    #             ration_name=request.POST['ration_name'], owner=request.user)
-    #         food_instance = Food.objects.filter(id__in=chosen_food)
-    #         foods = (FoodData(
-    #             ration=ration_instance, food_name=food,
-    #             weight=mass_dict[food.id]) for food in food_instance)
-    #         FoodData.objects.bulk_create(foods)
-    #         return redirect('calc:profile', username=request.user)
-    #     else:
-    #         return csrf_failure(
-    #             request, reason='У вас уже есть рацион с таким названием')
 
     # context
     context = {"form": form,

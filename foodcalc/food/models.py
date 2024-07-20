@@ -36,7 +36,7 @@ class NutrientsName(models.Model):
     order = models.IntegerField(default=100)
 
     def __str__(self):
-        return self.name
+        return self.name+', '+self.unit_name
 
     class Meta:
         ordering = ['order']
@@ -54,6 +54,9 @@ class NutrientsQuantity(models.Model):
         on_delete=models.CASCADE,
         related_name='quan')
     amount = models.FloatField(verbose_name='Количество')
+
+    class Meta:
+        unique_together = [['food', 'nutrient'],]
 
     def __str__(self):
         return '&cls ' + str(self.food) +\

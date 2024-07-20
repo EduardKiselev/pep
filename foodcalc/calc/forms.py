@@ -17,13 +17,11 @@ class RationCreateForm(forms.ModelForm):
         fields = ['ration_name', 'ration_comment']
 
     def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
-        print(self.request.user)
+        self.request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super(RationCreateForm, self).clean()
-        print('sdfsdfsdfsdf', cleaned_data, self.request.user)
         ration_name = cleaned_data.get('ration_name')
         if Rations.objects.filter(ration_name=ration_name,
                                   owner=self.request.user).exists():
@@ -63,11 +61,21 @@ class FormNutrAdd(forms.Form):
         self.chooses = kwargs.pop('choses', None)
         super().__init__(*args, **kwargs)
 
+        if 'nutrient' in self.data:
+            self.fields['nutrient'].queryset = NutrientsName.objects.all().filter(is_published=True)
+
     nutrient = forms.ModelChoiceField(queryset=NutrientsName.objects.none())
     amount = forms.FloatField()
 
 
 class FormNutrRemove(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        if 'nutrient' in self.data:
+            self.fields['nutrient'].queryset = NutrientsName.objects.all().filter(is_published=True)
+
     nutrient = forms.ModelChoiceField(queryset=NutrientsName.objects.none(),)
 
 
@@ -78,8 +86,7 @@ class AnimalForm(forms.ModelForm):
                   'sterilized', 'weight', 'birthday', ]
 
     def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
-        print(self.request.user)
+        self.user = kwargs['initial'].get('request').user
         super().__init__(*args, **kwargs)
 
     def clean(self):
@@ -92,7 +99,7 @@ class AnimalForm(forms.ModelForm):
                  и кормящим/беременным'''
                  })
         name = cleaned_data.get('name')
-        if Animal.objects.filter(name=name, owner=self.request.user).exists():
+        if Animal.objects.filter(name=name, owner=self.user).exists():
             raise forms.ValidationError(
                 {'name': 'У вас уже есть питомец с этим именем', })
 

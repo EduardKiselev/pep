@@ -51,14 +51,14 @@
     {% endif %}
       </tbody>  
     </table>
-    {% if 'ration' in request.path %} 
+    {% if 'ration' in request.path and request.user == object.owner %} 
     <form method='post'>
       {% csrf_token %}
     {% bootstrap_form form %}
     {% bootstrap_button button_type="submit" content="Сохранить" %}
     </form>
-    {% endif %}
-
+    {% endif %} 
+    
     {% if 'food/detail' in request.path %}
     <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
       href="{% url 'food:food_update' food.id%}"> Редактировать данные о продукте</a></button>

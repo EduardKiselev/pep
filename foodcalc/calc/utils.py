@@ -1,11 +1,13 @@
 from calc.models import Rations, FoodData
 from food.models import Food, NutrientsName, NutrientsQuantity
 from animal.models import AnimalType, PetStage, Animal
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 import json
 from django.core import serializers
 from pathlib import Path
 from datetime import datetime
+import ast
+from django.urls import reverse
 
 
 def pet_stage_calculate(animal):
@@ -174,7 +176,44 @@ def import_from_file(file, user):
 
         if data['model'] == 'animal.animal':
             pass
-        # for data in all_data:
-        #     if data['model'] == 'food.fooddata'
+        
     print('Import Finished')
     return
+
+
+def initialize(ration, request):
+    if ration == 0:
+        foods = request.COOKIES.get('chosen_food')
+        mass = request.COOKIES.get('mass_dict')
+        pet = request.COOKIES.get('chosen_pet')
+        if foods is None:
+            chosen_food = []
+        else:
+            foods = ast.literal_eval(foods)
+            chosen_food = foods
+        if mass is None:
+            mass_dict = {}
+        else:
+            mass = ast.literal_eval(mass)
+            mass_dict = mass
+        if pet is None:
+            chosen_pet = None
+        else:
+            foods = ast.literal_eval(pet)
+            try:
+                chosen_pet = Animal.objects.get(id=pet)
+                if chosen_pet.owner != request.user:
+                    chosen_pet = None
+            except Animal.DoesNotExist:
+                chosen_pet = None
+    else:
+        chosen_food = []
+        mass_dict = {}
+        chosen_pet = None
+        instance = FoodData.objects.filter(
+            ration=ration).select_related('food_name')
+        for elem in instance:
+            chosen_food.append(elem.food_name.id)
+            mass_dict[elem.food_name.id] = elem.weight
+        return redirect(reverse('calc:calc', args=(0,)))
+    return mass_dict, chosen_food, chosen_pet

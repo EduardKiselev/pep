@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from food.models import Food, NutrientsName, NutrientsQuantity
-from calc.forms import FoodForm, NutrinentForm, FoodCreateForm,\
+from calc.forms import FoodForm, NutrinentForm, FoodCreateForm, \
     RemoveNutrinentForm, FormNutrAdd, FormNutrRemove
 from django.views.generic import DetailView, DeleteView
 from django.urls import reverse_lazy, reverse
@@ -189,36 +189,27 @@ def food_update(request, food_id):
             'nutrient', 'food').order_by('nutrient__order')
     nutr_names_already_added = food_nutrients.values('nutrient__name')
     all_nutrients = NutrientsName.objects.all()
-    base_queryset = all_nutrients.values('id', 'name', 'unit_name').filter(
-            is_published=True)
-    form_queryset = base_queryset.values_list('name', 'unit_name')
 
     form_add = FormNutrAdd()
-    form_add.fields['nutrient'].queryset = form_queryset.exclude(
+    form_add.fields['nutrient'].queryset = all_nutrients.exclude(
         name__in=nutr_names_already_added)
     form_remove = FormNutrRemove()
-    form_remove.fields['nutrient'].queryset = form_queryset.filter(
+    form_remove.fields['nutrient'].queryset = all_nutrients.filter(
         name__in=nutr_names_already_added)
 
     if request.POST:
-        print(request.POST)
-        # new_form=FormNutrAdd(request.POST)
-        # print(new_form)
-        # print(new_form.errors.as_text())
-        # if FormNutrAdd(request.POST).is_valid():
-        #     print('sadfgsdfgsdf')
-        if 'amount' in request.POST and float(request.POST['amount']) > 0:
-            nutr_to_add = get_object_or_404(
-                all_nutrients,
-                name=ast.literal_eval(request.POST['nutrient'])[0])
-            amount = float(request.POST['amount'])
-            NutrientsQuantity.objects.create(
-                nutrient=nutr_to_add, amount=amount, food=food_instance)
-        else:
-            nutr_quan_id = get_object_or_404(
-                all_nutrients, name=ast.literal_eval(
-                    request.POST['nutrient'])[0])
-            get_object_or_404(food_nutrients, nutrient=nutr_quan_id).delete()
+        form_to_add = FormNutrAdd(request.POST)
+        if form_to_add.is_valid():
+            if not food_nutrients.filter(
+                    nutrient=form_to_add.cleaned_data['nutrient']).exists():
+                NutrientsQuantity.objects.create(
+                    nutrient=form_to_add.cleaned_data['nutrient'],
+                    amount=form_to_add.cleaned_data['amount'],
+                    food=food_instance)
+        else:    
+            form_remove = FormNutrRemove(request.POST)
+            if form_remove.is_valid():
+                get_object_or_404(food_nutrients, nutrient=form_remove.cleaned_data['nutrient'].id).delete()
 
     context = {}
     context['food_instance'] = food_instance
