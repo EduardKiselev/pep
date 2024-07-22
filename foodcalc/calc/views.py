@@ -162,8 +162,10 @@ def calc(request, ration=0):
                 if nutr.nutrient_name.name == 'Energy':
                     nutr_amount = get_object_or_404(
                         rec_nutr, nutrient_name__name='Energy').nutrient_amount
+
                     recommended[nutr.nutrient_name] = round(
                         nutr_amount * (weight)**(pet_stage_info.MER_power), 2)
+                    print('INFO HERE--->', nutr_amount, weight, recommended[nutr.nutrient_name], pet_stage_info, chosen_pet)
                 if nutr.nutrient_name.name == 'Water':
                     recommended[nutr.nutrient_name] = ' '
 
