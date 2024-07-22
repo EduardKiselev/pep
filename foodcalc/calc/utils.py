@@ -215,5 +215,4 @@ def initialize(ration, request):
         for elem in instance:
             chosen_food.append(elem.food_name.id)
             mass_dict[elem.food_name.id] = elem.weight
-        return redirect(reverse('calc:calc', args=(0,)))
     return mass_dict, chosen_food, chosen_pet

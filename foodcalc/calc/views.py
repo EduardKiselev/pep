@@ -94,6 +94,8 @@ def calc(request, ration=0):
     template = 'calc/calc.html'
     
     mass_dict, chosen_food, chosen_pet = initialize(ration, request)
+    if ration != 0:
+        return redirect(reverse('calc:calc', args=(0,)))
 
     print('chosen_food:', chosen_food)
     print('mass_dict:', mass_dict)
