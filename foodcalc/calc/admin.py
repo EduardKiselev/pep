@@ -53,5 +53,4 @@ class PetStage(admin.ModelAdmin):
     list_editable = ('age_start', 'age_finish', 'MER_power')
 
 
-
 admin.site.empty_value_display = 'Не задано'

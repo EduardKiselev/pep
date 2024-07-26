@@ -15,7 +15,8 @@ from pages.urls import csrf_failure
 from pathlib import Path
 from django_filters.views import FilterView
 from calc.filters import RationFilter
-
+from datetime import datetime
+import csv
 
 class RationDetailView(UpdateView):
     model = Rations
@@ -34,6 +35,11 @@ class RationDetailView(UpdateView):
             return redirect(reverse('calc:ration_delete',
                                     args=(self.kwargs.get(
                                         self.pk_url_kwarg),)))
+        if 'export' in self.request.GET:
+            print('redirect export')
+            return redirect(reverse('calc:ration_export',
+                                    args=(self.kwargs.get(
+                                        self.pk_url_kwarg),)))
         return super().get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -48,6 +54,56 @@ class RationDetailView(UpdateView):
         print(self.request.user.username)
         return reverse_lazy('calc:profile',
                             args=(self.request.user.username,))
+
+
+def ration_csv_export(request, ration_id):
+    instance = get_object_or_404(Rations, id=ration_id)
+    print(instance)
+    food_data = FoodData.objects.filter(ration=instance).select_related('food_name')
+    directory = str(Path(__file__).resolve().parent.parent)
+    filename = '/files/'+request.user.username + '_' + instance.ration_name +\
+        str(datetime.now().date())+'.csv'
+    file = directory + filename
+    food_list = [food.food_name.description for food in food_data]
+    nutrients = NutrientsName.objects.filter(is_published=True)
+    chosen_food = Food.objects.filter(description__in=food_list)
+    nutr_quan = NutrientsQuantity.objects.filter(food__in=chosen_food)
+    nutrient_list = [[nutrient.name, nutrient.unit_name] for nutrient in nutrients]
+    result = []
+    first_row=[instance.ration_name,]
+    second_row=['Amount, g',]
+    for food in chosen_food:
+        first_row.append(food.description)
+        second_row.append(food_data.filter(food_name=food).get().weight)
+    first_row.append('Totals')
+    first_row.append('Unit per 100 g dry matter')
+    first_row.append('Recommended')
+    result.append(first_row)
+    result.append(second_row)
+
+    for nutrient in nutrients:
+        row = [nutrient.name,]
+        totals=0
+        for food in chosen_food:
+            if nutr_quan.filter(food=food, nutrient=nutrient).exists():
+                amount=nutr_quan.filter(food=food, nutrient=nutrient).get().amount
+                row.append(amount)
+                totals += amount
+
+            else:
+                row.append(0)
+        row.append(totals)
+        result.append(row)
+        
+    print(*result, sep='\n')
+    # print(food_list)
+    # print(food_data)
+    # print(file)
+    with open(file, 'w', newline='\n') as csvfile:
+        writer = csv.writer(csvfile, delimiter=' ')
+        for row in result:
+            writer.writerow(row)
+    return redirect(reverse('calc:ration_detail', args=(ration_id,)))
 
 
 class RationDeleteView(DeleteView):
