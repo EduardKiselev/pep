@@ -115,24 +115,6 @@ def food_search(request, chosen_nutrients=[], mass_dict={}):
     return response
 
 
-# class FoodCreateView(CreateView, LoginRequiredMixin):
-#     model = Food
-#     form_class = FoodCreateForm
-#     #fields = ['description', ]
-#     template_name = 'calc/food_create.html'
-
-#     def form_valid(self, form):
-#         form.instance.ndbNumber = 0
-#         form.instance.fdcId = 0
-#         form.instance.author = self.request.user
-#         return super().form_valid(form)
-
-#     def get_success_url(self):
-#         id = get_object_or_404(Food,
-#                                description=self.request.POST['description']).id
-#         return reverse_lazy('food:food_detail',
-#                             args=(id,))
-
 @login_required
 def food_create(request):
     template = 'calc/food_create.html'
@@ -206,10 +188,12 @@ def food_update(request, food_id):
                     nutrient=form_to_add.cleaned_data['nutrient'],
                     amount=form_to_add.cleaned_data['amount'],
                     food=food_instance)
-        else:    
+        else:
             form_remove = FormNutrRemove(request.POST)
             if form_remove.is_valid():
-                get_object_or_404(food_nutrients, nutrient=form_remove.cleaned_data['nutrient'].id).delete()
+                get_object_or_404(food_nutrients,
+                                  nutrient=form_remove.cleaned_data[
+                                      'nutrient'].id).delete()
 
     context = {}
     context['food_instance'] = food_instance

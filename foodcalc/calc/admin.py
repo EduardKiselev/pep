@@ -1,22 +1,23 @@
 from django.contrib import admin
-from food.models import Food, NutrientsName, NutrientsQuantity
+from food.models import Food, NutrientsName, NutrientsQuantity, NutrientGroup
 from animal.models import Animal, AnimalType, PetStage
-from calc.models import Rations
+from calc.models import Rations, RecommendedNutrientLevelsDM
 
 
 @admin.register(Food)
 class FoodAdmin(admin.ModelAdmin):
     list_display = ('description', 'ndbNumber',
                     'fdcId',  'is_published', 'author', 'text')
-    list_editable = ('is_published', 'author','text')
+    list_editable = ('is_published', 'author', 'text')
     search_fields = ('description',)
     list_filter = ('is_published',)
 
 
 @admin.register(NutrientsName)
 class NutrientsNameAdmin(admin.ModelAdmin):
-    list_display = ('name', 'unit_name', 'is_published', 'order')
-    list_editable = ('is_published', 'order')
+    list_display = ('name', 'unit_name', 'is_published',
+                    'order', 'nutr_group', 'short_name')
+    list_editable = ('is_published', 'order', 'nutr_group', 'short_name')
     list_filter = ('is_published', )
     search_fields = ('name',)
 
@@ -49,8 +50,22 @@ class Rations(admin.ModelAdmin):
 
 @admin.register(PetStage)
 class PetStage(admin.ModelAdmin):
-    list_display = ('description', 'pet_type', 'pet_stage', 'sterilized', 'nursing', 'age_start', 'age_finish', 'MER_power')
+    list_display = ('description', 'pet_type', 'pet_stage', 'sterilized',
+                    'nursing', 'age_start', 'age_finish', 'MER_power')
     list_editable = ('age_start', 'age_finish', 'MER_power')
+
+
+@admin.register(NutrientGroup)
+class NutrientGroup(admin.ModelAdmin):
+    list_display = ('name', 'order')
+    list_editable = ('order',)
+
+
+@admin.register(RecommendedNutrientLevelsDM)
+class RecommendedNutrientLevelsDM(admin.ModelAdmin):
+    list_display = ('pet_type', 'pet_stage', 'nutrient_amount',
+                    'nutrient_name')
+    list_editable = ('nutrient_amount',)
 
 
 admin.site.empty_value_display = 'Не задано'

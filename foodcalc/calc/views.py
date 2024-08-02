@@ -2,14 +2,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from calc.models import User, RecommendedNutrientLevelsDM, \
     Rations, FoodData
 from animal.models import Animal, PetStage
-from food.models import Food, NutrientsName, NutrientsQuantity
+from food.models import Food, NutrientsName, NutrientsQuantity, NutrientGroup
 from calc.forms import FoodForm, RemoveFoodForm, ProfileForm, \
-    PetForm, RationCreateForm, FileForm, RationCommentForm
-from django.views.generic import DetailView,  DeleteView, UpdateView
+    PetForm, RationCreateForm, FileForm
+from django.views.generic import DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from calc.utils import pet_stage_calculate, import_from_file, \
-    export_to_file, initialize
+    export_to_file, initialize, round_rules
 # import pprint
 from pages.urls import csrf_failure
 from pathlib import Path
@@ -17,6 +17,8 @@ from django_filters.views import FilterView
 from calc.filters import RationFilter
 from datetime import datetime
 import csv
+from django.db.models import Sum
+
 
 class RationDetailView(UpdateView):
     model = Rations
@@ -58,47 +60,75 @@ class RationDetailView(UpdateView):
 
 def ration_csv_export(request, ration_id):
     instance = get_object_or_404(Rations, id=ration_id)
+    pet_stage = instance.pet_info
     print(instance)
-    food_data = FoodData.objects.filter(ration=instance).select_related('food_name')
+    food_data = FoodData.objects.filter(
+        ration=instance).select_related('food_name')
     directory = str(Path(__file__).resolve().parent.parent)
     filename = '/files/'+request.user.username + '_' + instance.ration_name +\
         str(datetime.now().date())+'.csv'
     file = directory + filename
+
+    nutr_groups = NutrientGroup.objects.all()
+
     food_list = [food.food_name.description for food in food_data]
     nutrients = NutrientsName.objects.filter(is_published=True)
     chosen_food = Food.objects.filter(description__in=food_list)
     nutr_quan = NutrientsQuantity.objects.filter(food__in=chosen_food)
-    nutrient_list = [[nutrient.name, nutrient.unit_name] for nutrient in nutrients]
-    result = []
-    first_row=[instance.ration_name,]
-    second_row=['Amount, g',]
+    recommended = RecommendedNutrientLevelsDM.objects.filter(
+        pet_stage=pet_stage)
+
+    # Dry_matter
+    total_mass = food_data.aggregate(Sum('weight'))['weight__sum']
+    total_water = 0
+    water = NutrientsName.objects.filter(name='Water').get()
     for food in chosen_food:
-        first_row.append(food.description)
-        second_row.append(food_data.filter(food_name=food).get().weight)
-    first_row.append('Totals')
-    first_row.append('Unit per 100 g dry matter')
-    first_row.append('Recommended')
-    result.append(first_row)
-    result.append(second_row)
+        total_water += nutr_quan.filter(
+            food=food, nutrient=water).get().amount * food_data.filter(
+                food_name=food).get().weight/100
 
-    for nutrient in nutrients:
-        row = [nutrient.name,]
-        totals=0
-        for food in chosen_food:
-            if nutr_quan.filter(food=food, nutrient=nutrient).exists():
-                amount=nutr_quan.filter(food=food, nutrient=nutrient).get().amount
-                row.append(amount)
-                totals += amount
-
+    result = []
+    for group in nutr_groups:
+        result.append([group.name])
+        group_nutrients = nutrients.filter(nutr_group=group)
+        totals = {nutr: 0 for nutr in group_nutrients}
+        row = ['', ]
+        for nutr in group_nutrients:
+            if nutr.short_name:
+                row.append(nutr.short_name+', '+nutr.unit_name)
             else:
-                row.append(0)
-        row.append(totals)
+                row.append(nutr.name+', '+nutr.unit_name)
         result.append(row)
-        
+        for food in chosen_food:
+            row = []
+            row.append(food.description)
+            for nutr in group_nutrients:
+                curr_nutr = nutr_quan.filter(food=food, nutrient=nutr)
+                if curr_nutr:
+                    amount = round_rules(
+                        curr_nutr.get().amount * food_data.filter(
+                            food_name=food).get().weight/100)
+                    row.append(amount)
+                    totals[nutr] += amount
+                else:
+                    row.append('')
+            result.append(row)
+        totals_row = ['Итого', ]
+        totals_row.extend([totals[nutr] for nutr in group_nutrients])
+        result.append(totals_row)
+
+        dry_matter_row = ['на 100гр. сухого', ]
+        dry_matter_row.extend(round_rules(totals*100/(total_mass-total_water))
+                              for totals in totals_row[1:])
+        result.append(dry_matter_row)
+
+        recomm_curr = recommended.filter(nutrient_name__in=group_nutrients)
+        recomm_row = ['Норма', ]
+        recomm_row.extend([elem.nutrient_amount for elem in recomm_curr])
+        result.append(recomm_row)
+
     print(*result, sep='\n')
-    # print(food_list)
-    # print(food_data)
-    # print(file)
+
     with open(file, 'w', newline='\n') as csvfile:
         writer = csv.writer(csvfile, delimiter=' ')
         for row in result:
@@ -148,7 +178,7 @@ def profile(request, username):
 @login_required
 def calc(request, ration=0):
     template = 'calc/calc.html'
-    
+
     mass_dict, chosen_food, chosen_pet = initialize(ration, request)
     if ration != 0:
         return redirect(reverse('calc:calc', args=(0,)))
@@ -221,7 +251,6 @@ def calc(request, ration=0):
 
                     recommended[nutr.nutrient_name] = round(
                         nutr_amount * (weight)**(pet_stage_info.MER_power), 2)
-                    print('INFO HERE--->', nutr_amount, weight, recommended[nutr.nutrient_name], pet_stage_info, chosen_pet)
                 if nutr.nutrient_name.name == 'Water':
                     recommended[nutr.nutrient_name] = ' '
 
@@ -259,15 +288,12 @@ def calc(request, ration=0):
 
         # Dry_matter
         total_mass = mass_dict[0]
-        total_water = totals.get('Water', 1)
+        total_water = totals.get('Water', 0.1)
         on_dry_matter = {}
         for nutr in totals:
             if nutr != 'Water' and nutr != 'Energy':
-                measure = round(100*totals[nutr]/(total_mass-total_water), 2)
-                if measure >= 10:
-                    measure = round(measure, 1)
-                if measure >= 100:
-                    measure = int(measure)
+                measure = round_rules(
+                    100*totals[nutr]/(total_mass-total_water))
                 on_dry_matter[nutr] = measure
         if chosen_pet:
             on_dry_matter['Energy'] = totals.get('Energy', 1)
@@ -317,7 +343,7 @@ def calc(request, ration=0):
     response.set_cookie(key='mass_dict', value=mass_dict)
     if chosen_pet:
         response.set_cookie(key='chosen_pet', value=chosen_pet.id)
-        
+
     print(context.get('ration'))
 
     return response

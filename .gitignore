@@ -1,7 +1,7 @@
 FoodData_Central*
 *.json
 founda*
-
+*files*
 
 
 # Byte-compiled / optimized / DLL files

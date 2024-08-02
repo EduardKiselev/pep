@@ -1,13 +1,21 @@
 from calc.models import Rations, FoodData
 from food.models import Food, NutrientsName, NutrientsQuantity
 from animal.models import AnimalType, PetStage, Animal
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 import json
 from django.core import serializers
 from pathlib import Path
 from datetime import datetime
 import ast
-from django.urls import reverse
+
+
+def round_rules(number):
+    if number >= 00:
+        return int(number)
+    if number >= 10:
+        return round(number, 1)
+    else:
+        return round(number, 2)
 
 
 def pet_stage_calculate(animal):
@@ -176,7 +184,7 @@ def import_from_file(file, user):
 
         if data['model'] == 'animal.animal':
             pass
-        
+
     print('Import Finished')
     return
 

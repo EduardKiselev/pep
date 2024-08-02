@@ -62,7 +62,8 @@ class FormNutrAdd(forms.Form):
         super().__init__(*args, **kwargs)
 
         if 'nutrient' in self.data:
-            self.fields['nutrient'].queryset = NutrientsName.objects.all().filter(is_published=True)
+            self.fields['nutrient'].queryset = NutrientsName.objects.all(
+            ).filter(is_published=True)
 
     nutrient = forms.ModelChoiceField(queryset=NutrientsName.objects.none())
     amount = forms.FloatField()
@@ -72,9 +73,9 @@ class FormNutrRemove(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
         if 'nutrient' in self.data:
-            self.fields['nutrient'].queryset = NutrientsName.objects.all().filter(is_published=True)
+            self.fields['nutrient'].queryset = NutrientsName.objects.all(
+            ).filter(is_published=True)
 
     nutrient = forms.ModelChoiceField(queryset=NutrientsName.objects.none(),)
 
@@ -115,7 +116,7 @@ class FileForm(forms.Form):
 
 
 class RationCommentForm(forms.ModelForm):
-    
+
     class Meta:
         model = Rations
         fields = ("ration_comment",)

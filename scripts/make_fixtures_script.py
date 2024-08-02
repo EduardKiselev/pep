@@ -1,6 +1,6 @@
 import json, os, sys, pprint
 
-import_files = ['user_export2024-07-17.json',]
+import_files = [] # ['user_export2024-07-17.json',]
 USER_ID = [100,]
 
 
@@ -512,7 +512,7 @@ for file in import_files:
                 user_food_list.append(data)
                 #need change author!!!!
             if data['model'] == 'food.rations':
-                    
+                   pass 
                 
 
                 
@@ -521,13 +521,13 @@ print(convert_animaltype)
 print(convert_petstage)
 
 
-print('Writing Data')
+
 write_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/foodcalc/'
 if flag == 'small':
     filename = 'small_data.json'
 elif flag == 'all':
     filename = 'all_data.json'
-
+print('Writing Data',write_dir,filename)
 with open(write_dir+filename, 'w') as file:
     json.dump(food_data_output, file, ensure_ascii=False)
 

@@ -32,7 +32,8 @@ class Rations(models.Model):
     ration_comment = models.TextField(verbose_name='комментарий', blank=True)
 
     def __str__(self):
-        return 'name: ' + str(self.ration_name) + ', user: ' + str(self.owner.username)
+        return 'name: ' + str(self.ration_name) +\
+            ', user: ' + str(self.owner.username)
 
     class Meta:
         unique_together = [['owner', 'ration_name'], ]

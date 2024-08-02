@@ -27,8 +27,25 @@ class Food(models.Model):
         verbose_name_plural = 'Продукты'
 
 
+class NutrientGroup(models.Model):
+    name = models.CharField(max_length=50)
+    order = models.IntegerField(default=100)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['order']
+
+
 class NutrientsName(models.Model):
     name = models.CharField(max_length=50)
+    short_name = models.CharField(max_length=23, blank=True)
+    nutr_group = models.ForeignKey(NutrientGroup,
+                                   verbose_name='Группа нутриентов',
+                                   on_delete=models.DO_NOTHING,
+                                   related_name='group_name',
+                                   blank=True, null=True)
     unit_name = models.CharField(max_length=10)
     is_published = models.BooleanField(
         default=True, verbose_name='Опубликовано',
@@ -56,7 +73,7 @@ class NutrientsQuantity(models.Model):
     amount = models.FloatField(verbose_name='Количество')
 
     class Meta:
-        unique_together = [['food', 'nutrient'],]
+        unique_together = [['food', 'nutrient'], ]
 
     def __str__(self):
         return '&cls ' + str(self.food) +\
