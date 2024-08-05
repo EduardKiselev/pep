@@ -205,7 +205,11 @@ for file_info in files:
                     nutr_name['fields'] = {}
                     nutr_name['fields']['name'] = name  # создание БД имен
                     if name != 'Energy':
-                        nutr_name['fields']['unit_name'] = data[i]['foodNutrients'][j]['nutrient']['unitName']
+                        unit_name = data[i]['foodNutrients'][j]['nutrient']['unitName']
+                        if unit_name == 'Вµg':
+                            unit_name= 'mug'
+                            print(name,unit_name)
+                        nutr_name['fields']['unit_name'] = unit_name
                     else:
                         nutr_name['fields']['unit_name'] = 'kcal'
                     unit_name_in_DB_dict[name] = nutr_name['fields']['unit_name']
@@ -420,6 +424,7 @@ for file_info in files:
                         nutr_name['fields']['unit_name'] = 'unknown'
                         print('MAKE UNKNOWN,', nutrient, nutr_name_pk)
                     unit_name_in_DB_dict[nutrient] = nutr_name['fields']['unit_name']
+                    
                     if nutrient in good_nutrients:
                         nutr_name['fields']['is_published'] = 1
                         nutr_name['fields']['order'] = nutrients_order[nutrient]
@@ -429,14 +434,14 @@ for file_info in files:
                     nutr_name_list.append(nutr_name)
 
                 nutr['fields']['nutrient_name'] = nutrients_dict[nutrient]
-
+                
                 if unit_name == 'IU':
                     if nutrient == 'Vitamin A': coef_nutr_to_gramm = 1 # here IU measure
                     if nutrient in ['Vitamin D (D2 + D3)','Vitamin D3 (cholecalciferol)']: coef_nutr_to_gramm = 0.000000025
                     if nutrient == 'Vitamin E (alpha-tocopherol)': coef_nutr_to_gramm = 0.00067
                 elif unit_name == 'g': coef_nutr_to_gramm = 1
                 elif unit_name == 'mg': coef_nutr_to_gramm = 1/1000
-                elif unit_name == 'mug': coef_nutr_to_gramm = 1/1000000
+                elif unit_name in ['mug','µg'] : coef_nutr_to_gramm = 1/1000000
                 elif unit_name == 'kcal': coef_nutr_to_gramm = 1  # here kcal measure    
 
                 unit_name_in_DB = unit_name_in_DB_dict.get(nutrient, 'unknown')
@@ -447,10 +452,9 @@ for file_info in files:
                         coef_to_unit_in_DB = 1 # here IU measure
                 elif unit_name_in_DB == 'g': coef_to_unit_in_DB = 1
                 elif unit_name_in_DB == 'mg': coef_to_unit_in_DB = 1/1000
-                elif unit_name_in_DB == 'µg': coef_to_unit_in_DB = 1/1000000
+                elif unit_name_in_DB in ['µg','Вµg','mug']: coef_to_unit_in_DB = 1/1000000
                 elif unit_name_in_DB == 'kcal': coef_to_unit_in_DB = 1 # here kcal measure
                 elif unit_name_in_DB == 'unknown': coef_to_unit_in_DB = 1 # here unknown measure
-
                 measure = float(d)*coef_nutr_to_gramm/coef_to_unit_in_DB
                 counter = 0
                 while measure >= 1:
@@ -533,7 +537,7 @@ if flag == 'small':
     filename = 'small_data.json'
 elif flag == 'all':
     filename = 'all_data.json'
-print('Writing Data',write_dir,filename)
+print('Writing Data', write_dir, filename)
 with open(write_dir+filename, 'w') as file:
     json.dump(food_data_output, file, ensure_ascii=False)
 

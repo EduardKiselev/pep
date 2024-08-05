@@ -179,9 +179,9 @@ def calc(request, ration=0):
     if ration != 0:
         return redirect(reverse('calc:calc', args=(0,)))
 
-    print('chosen_food:', chosen_food)
-    print('mass_dict:', mass_dict)
-    print('chosen_pet:', chosen_pet)
+    # print('chosen_food:', chosen_food)
+    # print('mass_dict:', mass_dict)
+    # print('chosen_pet:', chosen_pet)
 
     if request.GET:
         if 'food' in request.GET:
@@ -247,8 +247,20 @@ def calc(request, ration=0):
 
                     recommended[nutr.nutrient_name] = round(
                         nutr_amount * (weight)**(pet_stage_info.MER_power), 2)
+                    recommended_energy_consumption = recommended[nutr.nutrient_name]
                 if nutr.nutrient_name.name == 'Water':
                     recommended[nutr.nutrient_name] = ' '
+            
+            rec_nutr_1000kcal = RecommendedNutrientLevels1000kcal.objects.filter(
+                pet_stage__id=pet_stage.id).select_related('nutrient_name')
+            recommended_1000kcal = {}
+            for nutr in rec_nutr_1000kcal.iterator():
+                if nutr.nutrient_name.name not in ['Energy', 'Water']:
+
+                    recommended_1000kcal[nutr.nutrient_name] = round(nutr.nutrient_amount*recommended_energy_consumption/1000,2)
+                else:
+                    recommended_1000kcal[nutr.nutrient_name] = ' '
+
 
     # Food
     if chosen_food:
@@ -331,6 +343,7 @@ def calc(request, ration=0):
             'pet_stage': pet_stage_info,
             'chosen_pet': chosen_pet,
             'recommended_nutr': recommended,
+            'recommended_nutr_1000kcal': recommended_1000kcal,
             'ration_form': ration_form
         }
 
@@ -339,8 +352,6 @@ def calc(request, ration=0):
     response.set_cookie(key='mass_dict', value=mass_dict)
     if chosen_pet:
         response.set_cookie(key='chosen_pet', value=chosen_pet.id)
-
-    print(context.get('ration'))
 
     return response
 

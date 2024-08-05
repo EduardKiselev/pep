@@ -83,8 +83,9 @@
           <td scope="col"> {{item.description}} </td>
           {% endfor %}
         <td >  TOTALS </td>
+        {% if chosen_pet %}<td> Recommended, on Energy consumption </td> {% endif %}
         <td class='table-primary'> Unit per 100 g dry matter </td>   
-        {% if chosen_pet %}<td> Recommended </td> {% endif %}
+        {% if chosen_pet %}<td> Recommended, Dry matter </td> {% endif %}
         </tr>
       </thead>  
       <tbody>    
@@ -128,6 +129,13 @@
               {{totals|dict_key:nutrient_name.name }}
             {% endif %}
           </td>
+
+          {% if chosen_pet %}
+          <td style="text-align: center; vertical-align: middle;">
+            {{recommended_nutr_1000kcal|dict_key:nutrient_name}}
+          </td>
+          {% endif %}
+          
           <th style="text-align: center; vertical-align: middle;">
             
             {% if on_dry_matter|dict_key:nutrient_name.name %}
