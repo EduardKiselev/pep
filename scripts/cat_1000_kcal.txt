@@ -1,0 +1,45 @@
+Energy/ 75 100 175 175 kcal
+Protein/ 83.30 62.50 70.00 75.00 g
+Arginine/ 3.30 2.50 2.68 2.78 g
+Histidine/ 0.87 0.65 0.83 0.83 g
+Isoleucine/ 1.44 1.08 1.35 1.35 g
+Leucine/ 3.40 2.55 3.20 3.20 g
+Lysine/ 1.13 0.85 2.13 2.13 g 
+Methionine/ 0.57 0.43 1.10 1.10 g
+Methionine + cystine/ 1.13 0.85 2.20 2.20 g 
+Phenylalanine/ 1.33 1.00 1.25 1.25 g 
+Phenylalanine + tyrosine/ 5.11 3.83 4.78 4.78 g
+Threonine/ 1.73 1.30 1.63 1.63 g 
+Tryptophan/ 0.44 0.33 0.4 0.40 g
+Valine/ 1.70 1.28 1.60 1.6 g
+Taurine/ 0.33 0.25 0.25 0.25 g
+Total lipid (fat)/ 22.50 22.50 22.50 22.5 g
+Linoleic acid (omega-6)/ 1.67 1.25 1.38 1.38 g
+Arachidonic acid (omega-6)/ 20.00 15.00 50.00 50 mg
+Alpha-linolenic acid (omega-3)/ 0 0 0.05 0.05 g
+EPA + DHA (omega-3)/ 0 0 0.03 0.03 g 
+Calcium, Ca/ 1.33 1.00 2.50 2.5 g
+Phosphorus, P/ 0.85 0.64 2.10 2.1 g
+Potassium, K/ 2.00 1.50 1.50 1.5 g
+Sodium, Na/ 0.25 0.19 0.40 0.4 g
+Chloride/ 0.39 0.29 0.60 0.6 g
+Magnesium, Mg/ 0.13 0.10 0.13  0.13 g	
+Copper, Cu/ 1.67 1.25 2.50 2.5 mg	
+Iodine, I/ 0.43 0.33 0.45 0.45 mg
+Iron, Fe/ 26.70 20.00 20.00 20.0 mg	
+Manganese, Mn/ 1.67 1.25 2.50 2.5 mg	
+Selenium, Se/ 70.00 52.50 75.00	75 mug	
+Zinc, Zn/ 25.00 18.80 18.80 18.8 mg
+Vitamin A/ 1110 833.00 2250 2250 IU
+Vitamin D (D2 + D3)/ 83.30 62.50 70.00	70 IU
+Vitamin E (alpha-tocopherol)/ 12.70 9.50 9.50 9.5 IU
+Thiamin/ 1.47 1.10 1.40 1.4 mg
+Riboflavin/ 1.05 0.80 0.80 0.8 mg
+Pantothenic acid/ 1.92 1.44 1.43 1.43 mg
+Vitamin B-6/ 0.83 0.63 0.63 0.63 mg
+Vitamin B-12/ 5.87 4.40 4.50 4.5 mug
+Niacin/ 10.50 8.00 8.00 8.0 mg
+Folate, total/ 253.00 188.00 188.00 188 mug
+Biotin/ 20.00 15.00 17.50 17.5 mug
+Choline, total/ 800.00 600.00 600.00 600 mg
+Vitamin K (phylloquinone)/ 0 0 0 0 mug

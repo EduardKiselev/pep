@@ -39,8 +39,8 @@ good_nutrients = [
     'Selenium, Se',
     'Zinc, Zn',
     'Vitamin A',
-    'Vitamin A, RAE',
-    'Vitamin D3 (cholecalciferol)',
+  #  'Vitamin A, RAE',
+   # 'Vitamin D3 (cholecalciferol)',
     'Vitamin D (D2 + D3)',
     'Vitamin E (alpha-tocopherol)',
     'Thiamin',  # B1
@@ -288,8 +288,10 @@ for file_info in files:
 #read recommendednutrientlevels
 
 files = [
-    'cat_reformated.txt',
-    'dog_reformated.txt',
+    ('cat_dm.txt', 'calc.recommendednutrientlevelsdm', 'pk_start'),
+    ('dog_dm.txt', 'calc.recommendednutrientlevelsdm', 'pk_continue'),
+    ('cat_1000_kcal.txt', 'calc.recommendednutrientlevels1000kcal', 'pk_start'),
+    ('dog_1000_kcal.txt', 'calc.recommendednutrientlevels1000kcal', 'pk_continue'),
     ]
 pk = 1
 seq_of_data = {
@@ -374,7 +376,11 @@ for type_animal in seq_of_data:
 # pprint.pp(pet_stage_dict)
 # pprint.pp(pet_stages)
 
-for file in files:
+for file_info in files:
+    file = file_info[0]
+    table_name = file_info[1]
+    if file_info[2] == 'pk_start':
+        pk = 1
     if 'dog' in file:
         pet_type = 'dog'
         seq = seq_of_data['dog']
@@ -391,7 +397,7 @@ for file in files:
 
             for index, d in enumerate(data):
                 nutr = {}
-                nutr['model'] = 'calc.recommendednutrientlevelsdm'
+                nutr['model'] = table_name
                 nutr['pk'] = pk
                 pk += 1
                 nutr['fields'] = {}
@@ -426,7 +432,7 @@ for file in files:
 
                 if unit_name == 'IU':
                     if nutrient == 'Vitamin A': coef_nutr_to_gramm = 1 # here IU measure
-                    if nutrient == 'Vitamin D3 (cholecalciferol)': coef_nutr_to_gramm = 0.000000025
+                    if nutrient in ['Vitamin D (D2 + D3)','Vitamin D3 (cholecalciferol)']: coef_nutr_to_gramm = 0.000000025
                     if nutrient == 'Vitamin E (alpha-tocopherol)': coef_nutr_to_gramm = 0.00067
                 elif unit_name == 'g': coef_nutr_to_gramm = 1
                 elif unit_name == 'mg': coef_nutr_to_gramm = 1/1000

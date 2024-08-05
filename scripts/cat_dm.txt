@@ -31,7 +31,7 @@ Manganese, Mn/ 0.67 0.50 1.00 1.00 mg
 Selenium, Se/ 35.00 26.00 30.00 30.00 mug
 Zinc, Zn/ 10.00 7.50 7.50 7.50 mg
 Vitamin A/ 444.00 333.00 900.00 900.00 IU
-Vitamin D3 (cholecalciferol)/ 33.30 25.00 28.00 28.00 IU
+Vitamin D (D2 + D3)/ 33.30 25.00 28.00 28.00 IU
 Vitamin E (alpha-tocopherol)/ 5.07 3.80 3.80 3.80 IU
 Thiamin/ 0.59 0.44 0.55 0.55 mg
 Riboflavin/ 0.42 0.32 0.32 0.32 mg

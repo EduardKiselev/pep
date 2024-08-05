@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from calc.models import User, RecommendedNutrientLevelsDM, \
-    Rations, FoodData
+    Rations, FoodData, RecommendedNutrientLevels1000kcal
 from animal.models import Animal, PetStage
 from food.models import Food, NutrientsName, NutrientsQuantity, NutrientGroup
 from calc.forms import FoodForm, RemoveFoodForm, ProfileForm, \
@@ -28,17 +28,14 @@ class RationDetailView(UpdateView):
 
     def get(self, *args, **kwargs):
         if 'open_in_calc' in self.request.GET:
-            print('redirect')
             return redirect(reverse('calc:calc',
                                     args=(self.kwargs.get(
                                         self.pk_url_kwarg),)))
         if 'delete' in self.request.GET:
-            print('redirect delete')
             return redirect(reverse('calc:ration_delete',
                                     args=(self.kwargs.get(
                                         self.pk_url_kwarg),)))
         if 'export' in self.request.GET:
-            print('redirect export')
             return redirect(reverse('calc:ration_export',
                                     args=(self.kwargs.get(
                                         self.pk_url_kwarg),)))
@@ -61,7 +58,6 @@ class RationDetailView(UpdateView):
 def ration_csv_export(request, ration_id):
     instance = get_object_or_404(Rations, id=ration_id)
     pet_stage = instance.pet_info
-    print(instance)
     food_data = FoodData.objects.filter(
         ration=instance).select_related('food_name')
     directory = str(Path(__file__).resolve().parent.parent)
@@ -369,7 +365,7 @@ def profile_update(request):
 def recnutrlvl(request):
     template = 'calc/recnutrlvl.html'
     pet_stages = PetStage.objects.all().select_related('pet_type')
-    nutrients = RecommendedNutrientLevelsDM.objects.all().select_related(
+    nutrients = RecommendedNutrientLevels1000kcal.objects.all().select_related(
         'nutrient_name')
     nutrients_name = NutrientsName.objects.exclude(
         name='Water').filter(is_published=True).order_by('order')
