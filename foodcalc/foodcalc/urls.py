@@ -21,6 +21,7 @@ urlpatterns = [
         success_url=reverse_lazy('calc:index'),),
         name='registration'),
     path('auth/', include('django.contrib.auth.urls')),
+    path('api/', include('api.urls', namespace='api')),
 ]
 
 auth_urls = ([

@@ -20,7 +20,7 @@ class Food(models.Model):
         help_text='Снимите галочку, чтобы не выводить продукт.')
 
     def __str__(self):
-        return 'CLASS ' + self.description
+        return self.description
 
     class Meta:
         verbose_name = 'Продукт'

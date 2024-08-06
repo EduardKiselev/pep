@@ -22,12 +22,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'pages.apps.PagesConfig',
     'calc.apps.CalcConfig',
     'animal.apps.AnimalConfig',
     'food.apps.FoodConfig',
     'django_filters',
     'django_bootstrap5',
+    'rest_framework.authtoken',
+
     'debug_toolbar',
 ]
 
@@ -119,3 +122,12 @@ INTERNAL_IPS = [
 LOGIN_REDIRECT_URL = 'calc:index'
 
 LOGIN_URL = '/auth/login/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
