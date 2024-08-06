@@ -3,14 +3,14 @@ from rest_framework.authtoken import views
 from django.contrib import admin
 from django.urls import include, path
 
-from api.views import FoodViewSet, NutrientQuantityViewSet
+from api.views import FoodViewSet, NutrientQuantityViewSet, RationViewSet
 
 app_name = 'api'
 
 router = routers.DefaultRouter()
 router.register('food', FoodViewSet)
 router.register('nq', NutrientQuantityViewSet)
-# router.register(r'achievements', AchievementViewSet)
+router.register('rations', RationViewSet)
 
 urlpatterns = [
     path('api-token-auth/', views.obtain_auth_token),
