@@ -55,7 +55,7 @@ class RationDetailView(UpdateView):
                             args=(self.request.user.username,))
 
 
-def ration_csv_export(request, ration_id):
+def ration_csv_export(request, ration_id,flag_detail):
     instance = get_object_or_404(Rations, id=ration_id)
     pet_stage = instance.pet_info
     food_data = FoodData.objects.filter(
@@ -66,7 +66,6 @@ def ration_csv_export(request, ration_id):
     file = directory + filename
 
     nutr_groups = NutrientGroup.objects.all()
-
     food_list = [food.food_name.description for food in food_data]
     nutrients = NutrientsName.objects.filter(is_published=True)
     chosen_food = Food.objects.filter(description__in=food_list)
@@ -85,6 +84,7 @@ def ration_csv_export(request, ration_id):
 
     result = []
     for group in nutr_groups:
+        print(group)
         result.append([group.name])
         group_nutrients = nutrients.filter(nutr_group=group)
         totals = {nutr: 0 for nutr in group_nutrients}
@@ -122,13 +122,14 @@ def ration_csv_export(request, ration_id):
         recomm_row = ['Норма', ]
         recomm_row.extend([elem.nutrient_amount for elem in recomm_curr])
         result.append(recomm_row)
-
     print(*result, sep='\n')
-
-    with open(file, 'w', newline='\n') as csvfile:
-        writer = csv.writer(csvfile, delimiter=' ')
-        for row in result:
-            writer.writerow(row)
+    if flag_detail:
+        with open(file, 'w', newline='\n') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';')
+            for row in result:
+                writer.writerow(row)
+    else:
+        pass
     return redirect(reverse('calc:ration_detail', args=(ration_id,)))
 
 
@@ -176,8 +177,8 @@ def calc(request, ration=0):
     template = 'calc/calc.html'
 
     mass_dict, chosen_food, chosen_pet = initialize(ration, request)
-    if ration != 0:
-        return redirect(reverse('calc:calc', args=(0,)))
+    #if ration != 0:
+    #    return redirect(reverse('calc:calc', args=(1,)))
 
     # print('chosen_food:', chosen_food)
     # print('mass_dict:', mass_dict)
