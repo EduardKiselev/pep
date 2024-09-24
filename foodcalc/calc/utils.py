@@ -222,7 +222,7 @@ def initialize(ration, request):
     else:
         chosen_food = []
         mass_dict = {}
-        chosen_pet = get_object_or_404(Animal,id=1)
+        chosen_pet = None
         instance = FoodData.objects.filter(
             ration=ration).select_related('food_name')
         for elem in instance:

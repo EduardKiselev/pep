@@ -177,12 +177,6 @@ def calc(request, ration=0):
     template = 'calc/calc.html'
 
     mass_dict, chosen_food, chosen_pet = initialize(ration, request)
-    #if ration != 0:
-    #    return redirect(reverse('calc:calc', args=(1,)))
-
-    # print('chosen_food:', chosen_food)
-    # print('mass_dict:', mass_dict)
-    # print('chosen_pet:', chosen_pet)
 
     if request.GET:
         if 'food' in request.GET:
@@ -228,7 +222,8 @@ def calc(request, ration=0):
     nutrients = []
     items_name = []
     totals = {}
-
+    columns=[]
+    on_dry_matter=[]
 
 
     # Food
