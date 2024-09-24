@@ -82,7 +82,7 @@
 
           <td scope="col"> {{item.description}} </td>
           {% endfor %}
-        <td >  TOTALS </td>
+        <td class='table-primary'> TOTALS </td>
         {% if chosen_pet %}<td> Recommended, on Energy consumption </td> {% endif %}
         <td class='table-primary'> Unit per 100 g dry matter </td>   
         {% if chosen_pet %}<td> Recommended, Dry matter </td> {% endif %}
@@ -97,7 +97,7 @@
             <form method='POST' >
               {% csrf_token %} 
               <label for='quan_{{food}}'> </label>
-              <input type="number" step="0.1" Placeholder='{{mass_dict|dict_key:item.id}}' name="mass_{{item.id}}" style="width: 60px;">
+              <input type="number" step="0.01" Placeholder='{{mass_dict|dict_key:item.id}}' name="mass_{{item.id}}" style="width: 60px;">
             </form> 
           </td>  
 
@@ -124,11 +124,17 @@
             {% endfor %}
         </td>
           {% endfor %}
-          <td style="text-align: center; vertical-align: middle;">
+          <th style="text-align: center; vertical-align: middle;">
             {% if totals|dict_key:nutrient_name.name %}
-              {{totals|dict_key:nutrient_name.name }}
+            
+            {% if totals|dict_key:nutrient_name.name >= recommended_nutr_1000kcal|dict_key:nutrient_name %}
+            <font size="3" color="green">{{totals|dict_key:nutrient_name.name }}</font>
+            {% else %}
+            <font size="3" color="red">{{totals|dict_key:nutrient_name.name }}</font>
             {% endif %}
-          </td>
+            
+            {% endif %}
+          </th>
 
           {% if chosen_pet %}
           <td style="text-align: center; vertical-align: middle;">
@@ -137,9 +143,8 @@
           {% endif %}
           
           <th style="text-align: center; vertical-align: middle;">
-            
             {% if on_dry_matter|dict_key:nutrient_name.name %}
-             {% if on_dry_matter|dict_key:nutrient_name.name > recommended_nutr|dict_key:nutrient_name %}
+             {% if on_dry_matter|dict_key:nutrient_name.name >= recommended_nutr|dict_key:nutrient_name %}
               <font size="3" color="green">{{on_dry_matter|dict_key:nutrient_name.name }}</font>
               {% else %}
               <font size="3" color="red">{{on_dry_matter|dict_key:nutrient_name.name }}</font>

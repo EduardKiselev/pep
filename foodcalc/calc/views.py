@@ -229,6 +229,22 @@ def calc(request, ration=0):
     items_name = []
     totals = {}
 
+
+
+    # Food
+    if chosen_food:
+        mass_dict[0] = 0
+        mass_dict[0] = round_rules(sum(mass_dict.values())+0.01)
+
+        # Totals
+        for food_id in chosen_food:
+            all_nutr = NutrientsQuantity.objects.select_related(
+                'nutrient').filter(
+                    food__id=food_id, nutrient__is_published=True)
+            for nutr in all_nutr.iterator():
+                totals[nutr.nutrient.name] = round_rules(totals.get(nutr.nutrient.name, 0) + mass_dict.get(food_id, 0) * nutr.amount/100)
+                                                
+        
     # Pet
     if chosen_pet:
         tmp = pet_stage_calculate(chosen_pet)
@@ -239,6 +255,7 @@ def calc(request, ration=0):
             pet_stage_info = get_object_or_404(PetStage, id=pet_stage.id)
             rec_nutr = RecommendedNutrientLevelsDM.objects.filter(
                 pet_stage__id=pet_stage.id).select_related('nutrient_name')
+    #recomended per DryMatter
             recommended = {}
             for nutr in rec_nutr.iterator():
                 recommended[nutr.nutrient_name] = nutr.nutrient_amount
@@ -246,38 +263,25 @@ def calc(request, ration=0):
                     nutr_amount = get_object_or_404(
                         rec_nutr, nutrient_name__name='Energy').nutrient_amount
 
-                    recommended[nutr.nutrient_name] = round(
-                        nutr_amount * (weight)**(pet_stage_info.MER_power), 2)
-                    recommended_energy_consumption = recommended[nutr.nutrient_name]
+                    recommended[nutr.nutrient_name] = round_rules(
+                        nutr_amount * (weight)**(pet_stage_info.MER_power))
                 if nutr.nutrient_name.name == 'Water':
                     recommended[nutr.nutrient_name] = ' '
-            
+    #recommended per 1000kcal
             rec_nutr_1000kcal = RecommendedNutrientLevels1000kcal.objects.filter(
                 pet_stage__id=pet_stage.id).select_related('nutrient_name')
             recommended_1000kcal = {}
+            total_energy = totals.get('Energy',0)
+            
             for nutr in rec_nutr_1000kcal.iterator():
                 if nutr.nutrient_name.name not in ['Energy', 'Water']:
 
-                    recommended_1000kcal[nutr.nutrient_name] = round(nutr.nutrient_amount*recommended_energy_consumption/1000,2)
+                    recommended_1000kcal[nutr.nutrient_name] = round_rules(nutr.nutrient_amount*total_energy/1000)
+                elif nutr.nutrient_name.name=='Energy':
+                    recommended_1000kcal[nutr.nutrient_name] = total_energy
                 else:
                     recommended_1000kcal[nutr.nutrient_name] = ' '
 
-
-    # Food
-    if chosen_food:
-        mass_dict[0] = 0
-        mass_dict[0] = sum(mass_dict.values())+0.0001
-
-        # Totals
-        for food_id in chosen_food:
-            all_nutr = NutrientsQuantity.objects.select_related(
-                'nutrient').filter(
-                    food__id=food_id, nutrient__is_published=True)
-            for nutr in all_nutr.iterator():
-                totals[nutr.nutrient.name] = round(
-                    totals.get(nutr.nutrient.name, 0)
-                    + mass_dict.get(food_id, 0) * nutr.amount/100, 2
-                                                )
 
         # Food nutrients
         delete_list = Food.objects.filter(id__in=chosen_food)

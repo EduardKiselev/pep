@@ -10,7 +10,7 @@ import ast
 
 
 def round_rules(number):
-    if number >= 00:
+    if number >= 100:
         return int(number)
     if number >= 10:
         return round(number, 1)
