@@ -58,7 +58,7 @@ class FoodNameForm(forms.Form):
 class FormNutrAdd(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        self.chooses = kwargs.pop('choses', None)
+        self.chooses = kwargs.pop('chooses', None)
         super().__init__(*args, **kwargs)
 
         if 'nutrient' in self.data:

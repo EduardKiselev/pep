@@ -69,6 +69,7 @@ def export_to_file(user):
 
 
 def import_from_file(file, user):
+    print('Start Import')
     nutrients_query = NutrientsName.objects.all()
     petstage_query = PetStage.objects.all()
     animaltype_query = AnimalType.objects.all()
@@ -95,12 +96,13 @@ def import_from_file(file, user):
             if data['model'] == 'food.nutrientsname':
                 convert_nutrients_name[data['pk']] = nutrients_query.filter(
                     name=data['fields']['name']).get().id
-            if data['model'] == 'animal.animaltype':
-                convert_animaltype[data['pk']] = animaltype_query.filter(
-                    title=data['fields']['title']).get().id
+            # if data['model'] == 'animal.animaltype':
+            #     convert_animaltype[data['pk']] = animaltype_query.filter(
+            #         title=data['fields']['title']).get().id
             if data['model'] == 'animal.petstage':
                 convert_petstage[data['pk']] = petstage_query.filter(
                     pet_stage=data['fields']['pet_stage']).get().id
+        print('Start Food')
         for data in all_data:
             if data['model'] == 'food.food' and not food_query.filter(
                     description=data['fields']['description']).exists():
@@ -115,7 +117,8 @@ def import_from_file(file, user):
                     ))
         Food.objects.bulk_create(user_food)
         new_food_query = Food.objects.filter(description__in=user_food_names)
-
+        print('Food Objects Created')
+        print('new foods',new_food_query)
         for data in all_data:
             if data['model'] == 'food.food':
                 convert_food[data['pk']] = food_query.filter(
@@ -124,6 +127,7 @@ def import_from_file(file, user):
         if new_food_query:
             for data in all_data:
                 if data['model'] == 'food.nutrientsquantity':
+                    print(data)
                     id_food_in_file = data['fields']['food']
                     id_nutr_in_file = data['fields']['nutrient']
                     user_nutr_quan.append(NutrientsQuantity(
@@ -137,10 +141,10 @@ def import_from_file(file, user):
                     ))
             print(user_nutr_quan)
             NutrientsQuantity.objects.bulk_create(user_nutr_quan)
-        print('convert_nutrients_name', convert_nutrients_name)
-        print('convert_animaltype', convert_animaltype)
-        print('convert_petstage', convert_petstage)
-        print('convert_food', convert_food)
+        # print('convert_nutrients_name', convert_nutrients_name)
+        # print('convert_animaltype', convert_animaltype)
+        # print('convert_petstage', convert_petstage)
+        # print('convert_food', convert_food)
         print('user_food', user_food)
         for data in all_data:
             if data['model'] == 'calc.rations':
@@ -155,7 +159,8 @@ def import_from_file(file, user):
                             petstage_query, id=convert_petstage[
                                 id_petstage_in_file]),
                         ration_name=data['fields']['ration_name'],
-                        ration_comment=data['fields'].get('ration_comment')
+                        ration_comment=data['fields'].get('ration_comment'),
+                        pet_weight = 1
                     ))
         Rations.objects.bulk_create(user_rations)
 

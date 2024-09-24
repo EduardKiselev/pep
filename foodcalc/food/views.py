@@ -170,7 +170,7 @@ def food_update(request, food_id):
         food=food_id, nutrient__is_published=True).select_related(
             'nutrient', 'food').order_by('nutrient__order')
     nutr_names_already_added = food_nutrients.values('nutrient__name')
-    all_nutrients = NutrientsName.objects.all()
+    all_nutrients = NutrientsName.objects.filter(is_published=True)
 
     form_add = FormNutrAdd()
     form_add.fields['nutrient'].queryset = all_nutrients.exclude(
@@ -178,10 +178,12 @@ def food_update(request, food_id):
     form_remove = FormNutrRemove()
     form_remove.fields['nutrient'].queryset = all_nutrients.filter(
         name__in=nutr_names_already_added)
-
+    print('2222222')
     if request.POST:
+        print('333333')
         form_to_add = FormNutrAdd(request.POST)
         if form_to_add.is_valid():
+            print('1111111')
             if not food_nutrients.filter(
                     nutrient=form_to_add.cleaned_data['nutrient']).exists():
                 NutrientsQuantity.objects.create(
