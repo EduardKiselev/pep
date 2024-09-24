@@ -35,8 +35,8 @@ class Animal(models.Model):
         рассчитывается для взрослых собак'''
         )
 
-    class Meta:
-        unique_together = [['owner_id', 'name'], ]
+    # class Meta:
+    #     unique_together = [['owner_id', 'name'], ]
 
     def __str__(self):
         return 'cls ' + self.name

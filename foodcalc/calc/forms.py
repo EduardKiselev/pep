@@ -99,10 +99,10 @@ class AnimalForm(forms.ModelForm):
                  'sterilized': '''Не возможно быть одновременно стерилизованным
                  и кормящим/беременным'''
                  })
-        name = cleaned_data.get('name')
-        if Animal.objects.filter(name=name, owner=self.user).exists():
-            raise forms.ValidationError(
-                {'name': 'У вас уже есть питомец с этим именем', })
+        # name = cleaned_data.get('name')
+        # if Animal.objects.filter(name=name, owner=self.user).exists():
+        #     raise forms.ValidationError(
+        #         {'name': 'У вас уже есть питомец с этим именем', })
 
 
 class FoodCreateForm(forms.Form):

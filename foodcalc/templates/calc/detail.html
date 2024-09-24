@@ -4,14 +4,13 @@
 {% block content %}
     <h2>
       {% if 'ration' in request.path %}
-      {{object.ration_name}}
       <form>
         <button name = "open_in_calc" value="{{object.id}}" type="submit" class="btn btn-outline-primary"><a class="text-decoration-none text-reset">Открыть рацион в калькуляторе</a></button>
       </form>
 
-      <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
+      {% comment %} <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
         href="{% url 'calc:calc' object.id%}"> 11111</a></button>
-        
+         {% endcomment %}
         
 
       <form>
