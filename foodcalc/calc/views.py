@@ -55,7 +55,7 @@ class RationDetailView(UpdateView):
                             args=(self.request.user.username,))
 
 
-def ration_csv_export(request, ration_id,flag_detail):
+def ration_csv_export(request, ration_id, flag_detail):
     instance = get_object_or_404(Rations, id=ration_id)
     pet_stage = instance.pet_info
     food_data = FoodData.objects.filter(
@@ -295,7 +295,7 @@ def calc(request, ration=0):
             is_published=True).order_by('order')
 
         # Dry_matter
-        total_mass = mass_dict[0]
+        total_mass = mass_dict.get(0,0.001)
         total_water = totals.get('Water', 0.1)
         on_dry_matter = {}
         for nutr in totals:
