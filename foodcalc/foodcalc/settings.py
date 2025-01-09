@@ -4,13 +4,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-vj8y+f*)tt+@pt5^3h6jv2u^o4+wqonsb05y6ix-3!g=u*rzbx'
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
-    'www.eduardkiselev.pythonanywhere.com',
-    'eduardkiselev.pythonanywhere.com',
+    'foodpetgram.msk.ru',
+    '178.208.90.31',
+    'localhost',
     '127.0.0.1',
 ]
+
+CSRF_TRUSTED_ORIGINS = ['https://*.foodpetgram.msk.ru','https://*.127.0.0.1']
 
 
 # Application definition
@@ -23,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'api.apps.ApiConfig',
     'pages.apps.PagesConfig',
     'calc.apps.CalcConfig',
     'animal.apps.AnimalConfig',
@@ -104,8 +108,11 @@ USE_L10N = True
 
 USE_TZ = True
 
+MEDIA_URL = '/static/'
 
-STATIC_URL = '/static/'
+STATIC_URL = '/static_b/'
+
+STATIC_ROOT = BASE_DIR / 'static_b'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static_dev',
