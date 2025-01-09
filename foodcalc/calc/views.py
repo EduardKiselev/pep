@@ -60,7 +60,7 @@ class RationDetailView(UpdateView):
 def ration_csv_export(request, ration_id):
     instance = get_object_or_404(Rations, id=ration_id)
     # Generate CSV content
-    csv_content = generate_ration_csv(request, ration_id)
+    csv_content = generate_ration_csv(ration_id)
 
     # Create HTTP response for downloading
     response = HttpResponse(csv_content, content_type='text/csv')
@@ -68,15 +68,11 @@ def ration_csv_export(request, ration_id):
     return response
 
 
-def generate_ration_csv(request, ration_id, flag_detail=1):
+def generate_ration_csv(ration_id):
     instance = get_object_or_404(Rations, id=ration_id)
     pet_stage = instance.pet_info
     food_data = FoodData.objects.filter(
         ration=instance).select_related('food_name')
-    directory = str(Path(__file__).resolve().parent.parent)
-    filename = '/files/'+request.user.username + '_' + instance.ration_name +\
-        str(datetime.now().date())+'.csv'
-    file = directory + filename
 
     nutr_groups = NutrientGroup.objects.all()
     food_list = [food.food_name.description for food in food_data]
