@@ -18,6 +18,8 @@ from calc.filters import RationFilter
 from datetime import datetime
 import csv
 from django.db.models import Sum
+from django.http import HttpResponse
+import io
 
 
 class RationDetailView(UpdateView):
@@ -55,7 +57,18 @@ class RationDetailView(UpdateView):
                             args=(self.request.user.username,))
 
 
-def ration_csv_export(request, ration_id, flag_detail):
+def ration_csv_export(request, ration_id):
+    instance = get_object_or_404(Rations, id=ration_id)
+    # Generate CSV content
+    csv_content = generate_ration_csv(request, ration_id)
+
+    # Create HTTP response for downloading
+    response = HttpResponse(csv_content, content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{request.user.username}_{instance.ration_name}_{datetime.now().date()}.csv"'
+    return response
+
+
+def generate_ration_csv(request, ration_id, flag_detail=1):
     instance = get_object_or_404(Rations, id=ration_id)
     pet_stage = instance.pet_info
     food_data = FoodData.objects.filter(
@@ -72,7 +85,6 @@ def ration_csv_export(request, ration_id, flag_detail):
     nutr_quan = NutrientsQuantity.objects.filter(food__in=chosen_food)
     recommended = RecommendedNutrientLevelsDM.objects.filter(
         pet_stage=pet_stage)
-
     # Dry_matter
     total_mass = food_data.aggregate(Sum('weight'))['weight__sum']
     total_water = 0
@@ -112,7 +124,6 @@ def ration_csv_export(request, ration_id, flag_detail):
         totals_row = ['Итого', ]
         totals_row.extend([totals[nutr] for nutr in group_nutrients])
         result.append(totals_row)
-
         dry_matter_row = ['на 100гр. сухого', ]
         dry_matter_row.extend(round_rules(totals*100/(total_mass-total_water))
                               for totals in totals_row[1:])
@@ -123,14 +134,13 @@ def ration_csv_export(request, ration_id, flag_detail):
         recomm_row.extend([elem.nutrient_amount for elem in recomm_curr])
         result.append(recomm_row)
     print(*result, sep='\n')
-    if flag_detail:
-        with open(file, 'w', newline='\n') as csvfile:
-            writer = csv.writer(csvfile, delimiter=';')
-            for row in result:
-                writer.writerow(row)
-    else:
-        pass
-    return redirect(reverse('calc:ration_detail', args=(ration_id,)))
+
+    # Generate CSV content
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=';')
+    for row in result:
+        writer.writerow(row)
+    return output.getvalue()
 
 
 class RationDeleteView(DeleteView):
