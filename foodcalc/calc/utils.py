@@ -2,6 +2,8 @@ from calc.models import Rations, FoodData
 from food.models import Food, NutrientsName, NutrientsQuantity
 from animal.models import AnimalType, PetStage, Animal
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from urllib.parse import quote 
 import json
 from django.core import serializers
 from pathlib import Path
@@ -39,6 +41,34 @@ def pet_stage_calculate(animal):
         return None
 
 
+# def export_to_file(user):
+#     queries = []
+#     food_query = Food.objects.filter(author=user)
+#     queries.append(food_query)
+#     queries.append(NutrientsQuantity.objects.filter(food__in=food_query))
+#     queries.append(NutrientsName.objects.all())
+#     ration_query = Rations.objects.filter(owner=user)
+#     queries.append(ration_query)
+#     queries.append(FoodData.objects.filter(ration__in=ration_query))
+#     queries.append(Animal.objects.filter(owner=user))
+#     queries.append(PetStage.objects.all())
+#     queries.append(AnimalType.objects.all())
+#     res = []
+#     for q in queries:
+#         if q:
+#             data_json = serializers.serialize('json', q)
+#             res.extend(json.loads(data_json))
+#     res = json.dumps(res, ensure_ascii=False)
+
+#     directory = str(Path(__file__).resolve().parent.parent)
+#     filename = '/files/'+user.username+'_export' +\
+#         str(datetime.now().date())+'.json'
+#     file = directory + filename
+#     with open(file, 'w', encoding='utf-8') as output:
+#         print(res, file=output)
+#     print('export Finished')
+#     return
+
 def export_to_file(user):
     queries = []
     food_query = Food.objects.filter(author=user)
@@ -58,14 +88,14 @@ def export_to_file(user):
             res.extend(json.loads(data_json))
     res = json.dumps(res, ensure_ascii=False)
 
-    directory = str(Path(__file__).resolve().parent.parent)
-    filename = '/files/'+user.username+'_export' +\
-        str(datetime.now().date())+'.json'
-    file = directory + filename
-    with open(file, 'w', encoding='utf-8') as output:
-        print(res, file=output)
-    print('export Finished')
-    return
+    # Создаем имя файла
+    filename = user.username + '_export_' + str(datetime.now().date()) + '.json'
+    
+    # Создаем HTTP-ответ с файлом
+    response = HttpResponse(res, content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename={quote(filename)}'
+    print("129476230956239659284365")
+    return response
 
 
 def import_from_file(file, user):

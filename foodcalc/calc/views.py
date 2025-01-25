@@ -8,7 +8,7 @@ from calc.forms import FoodForm, RemoveFoodForm, ProfileForm, \
 from django.views.generic import DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
-from calc.utils import pet_stage_calculate, import_from_file, \
+from calc.utils import pet_stage_calculate, \
     export_to_file, initialize, round_rules
 # import pprint
 from pages.urls import csrf_failure
@@ -408,7 +408,7 @@ def data_export(request):
     template = 'calc/export.html'
     if request.GET:
         user = request.user
-        export_to_file(user)
+        return export_to_file(user)
     return render(request, template, {})
 
 
