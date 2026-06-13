@@ -56,10 +56,10 @@ except User.DoesNotExist:
 
 # Список файлов для обработки
 files = [
-    ('FoodData_Central_sr_legacy_food_json_2021-10-28.json', 'SRLegacyFoods', 'legacy'),
-    ('foundationDownload.json', 'FoundationFoods', 'foundation1'),
-    ('FoodData_Central_survey_food_json_2022-10-28.json', 'SurveyFoods', 'survey'),
-    ('FoodData_Central_foundation_food_json_2022-10-28.json', 'FoundationFoods', 'foundation2'),
+    ('FoodData_Central_sr_legacy_food_json_2018-04.json', 'SRLegacyFoods', 'legacy'),
+   # ('foundationDownload.json', 'FoundationFoods', 'foundation1'),
+    ('surveyDownload.json', 'SurveyFoods', 'survey'),
+    ('FoodData_Central_foundation_food_json_2026-04-30.json', 'FoundationFoods', 'foundation2'),
 ]
 
 def chunk_list(lst, size):
