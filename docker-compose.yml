@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: pep_postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${DB_NAME:-foodcalc_db}
+      - POSTGRES_USER=${DB_USER:-foodcalc_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-foodcalc_password}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-foodcalc_user}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: ./foodcalc  # Контекст сборки теперь указывает на папку foodcalc
+    container_name: pep_django
+    working_dir: /app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8000 foodcalc.wsgi:application"
+    volumes:
+      - ./foodcalc:/app  # Монтируем именно foodcalc, так как там лежит manage.py
+      - static_volume:/app/static_backend
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+  
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/app/static_backend:ro  # readOnly доступ к статике
+      - media_volume:/app/media:ro            # readOnly доступ к медиа
+      - ./certbot/conf:/etc/letsencrypt       # Для SSL
+    depends_on:
+      - web
+    restart: always
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

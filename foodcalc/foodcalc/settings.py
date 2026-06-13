@@ -6,23 +6,17 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('TOKEN')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me-in-production')
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-DEBUG = False
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-ALLOWED_HOSTS = [
-    'foodpetgram.msk.ru',
-    '178.208.90.31',
-    'localhost',
-    '127.0.0.1',
-]
-
-CSRF_TRUSTED_ORIGINS = ['https://*.foodpetgram.msk.ru','https://*.127.0.0.1']
-
-
-# Application definition
+CSRF_TRUSTED_ORIGINS = [
+    f'https://{host}' for host in ALLOWED_HOSTS if host != '*'
+] + ['http://localhost:8000', 'http://127.0.0.1:8000']
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,12 +32,12 @@ INSTALLED_APPS = [
     'django_filters',
     'django_bootstrap5',
     'rest_framework.authtoken',
-
     'debug_toolbar',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -51,13 +45,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-
 ]
 
 ROOT_URLCONF = 'foodcalc.urls'
 
 TEMPLATES_DIR = BASE_DIR / 'templates'
-
 
 TEMPLATES = [
     {
@@ -79,59 +71,49 @@ WSGI_APPLICATION = 'foodcalc.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'foodcalc_db'),
+        'USER': os.getenv('DB_USER', 'foodcalc_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'foodcalc_password'),
+        'HOST': os.getenv('DB_HOST', 'db'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
-
 
 LANGUAGE_CODE = 'ru-RU'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
-USE_L10N = True
-
 USE_TZ = True
 
-MEDIA_URL = '/static/'
+# Статика и Медиа (конфликт устранен)
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static_backend'
+STATICFILES_DIRS = [BASE_DIR / 'static_dev']
 
-STATIC_URL = '/static_b/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
-STATIC_ROOT = BASE_DIR / 'static_b'
-
-STATICFILES_DIRS = [
-    BASE_DIR / 'static_dev',
-]
-
+# Настройка WhiteNoise (совместимо с Django 5)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-INTERNAL_IPS = [
-    '127.0.0.1',
-    ]
-
+INTERNAL_IPS = ['127.0.0.1']
 LOGIN_REDIRECT_URL = 'calc:index'
-
 LOGIN_URL = '/auth/login/'
 
 REST_FRAMEWORK = {

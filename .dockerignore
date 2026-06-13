@@ -1,0 +1,17 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv
+.env
+*.sqlite3
+db.sqlite3
+.git
+.gitignore
+.vscode
+.idea
+*.zip
+*.tar.gz
+static_backend/
