@@ -16,6 +16,12 @@ from itertools import islice
 
 User = get_user_model()
 
+SUPERUSER_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+
+if not SUPERUSER_PASSWORD:
+    raise ValueError("⚠️ ОШИБКА: Не установлена переменная окружения DJANGO_SUPERUSER_PASSWORD. Добавьте её в .env файл.")
+
+
 # --- КОНФИГУРАЦИЯ ---
 good_nutrients = [
     'Water', 'Energy', 'Protein', 'Arginine', 'Histidine', 'Isoleucine',
@@ -52,8 +58,14 @@ name_map = {
 try:
     author_user = User.objects.get(username='FoodData')
 except User.DoesNotExist:
-    author_user = User.objects.create_superuser('FoodData', 'fooddata@example.com', 'strongpassword')
+    author_user = User.objects.create_superuser(
+        username='FoodData',
+        email='fooddata@example.com',
+        password=SUPERUSER_PASSWORD
+    )
+    print("✅ Создан пользователь FoodData")
 
+    
 # Список файлов для обработки
 files = [
     ('FoodData_Central_sr_legacy_food_json_2018-04.json', 'SRLegacyFoods', 'legacy'),
