@@ -5,13 +5,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_DB=${DB_NAME:-foodcalc_db}
-      - POSTGRES_USER=${DB_USER:-foodcalc_user}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-foodcalc_password}
+      - POSTGRES_DB=${DB_NAME:-db}
+      - POSTGRES_USER=${DB_USER:-user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-foodcalc_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-user}"]
       interval: 5s
       timeout: 5s
       retries: 5
