@@ -14,6 +14,7 @@ try:
     import ijson
 except ImportError:
     print("❌ ОШИБКА: Библиотека 'ijson' не найдена.")
+    print("Установите её: docker compose run --rm web pip install ijson")
     sys.exit(1)
 
 from food.models import Food, NutrientsName, NutrientsQuantity
@@ -92,6 +93,7 @@ def process_stream(file_info):
 
     items_processed = 0
     quants_processed = 0
+    skipped_items = 0
     
     # Буфер для пачки связей (NutrientsQuantity)
     batch_quantities = [] 
@@ -102,15 +104,28 @@ def process_stream(file_info):
         items_generator = ijson.items(f, f'{key}.item')
 
         for item in items_generator:
+            # ЗАЩИТА: Пропускаем null элементы или некорректные данные
+            if item is None:
+                skipped_items += 1
+                continue
+            
+            if not isinstance(item, dict):
+                skipped_items += 1
+                continue
+
+            desc = item.get('description')
+            if not desc:
+                skipped_items += 1
+                continue
+
             items_processed += 1
             
             # Прогресс
             if items_processed % 1000 == 0:
-                sys.stdout.write(f"\r   📖 Распарсено items: {items_processed}")
+                sys.stdout.write(f"\r   📖 Распарсено items: {items_processed} | Пропущено: {skipped_items}")
                 sys.stdout.flush()
 
-            desc = item['description']
-            fdcId = item['fdcId']
+            fdcId = item.get('fdcId')
             ndbNumber = item.get('ndbNumber', 0)
             
             # Категория
@@ -153,18 +168,30 @@ def process_stream(file_info):
             nutrients_for_item = [] 
             calc_sums = {} 
 
-            for fn in item.get('foodNutrients', []):
-                amount = fn.get('amount')
-                if amount is None: 
-                    amount = fn.get('median')
-                if amount is None: 
+            # Получаем список нутриентов безопасно
+            food_nutrients = item.get('foodNutrients') or []
+
+            for fn in food_nutrients:
+                nutrient_data = fn.get('nutrient')
+                if not nutrient_data:
                     continue
                 
-                # ИСПРАВЛЕНИЕ: Приводим к float, так как ijson возвращает Decimal
-                amount = float(amount)
+                name = nutrient_data.get('name')
+                if not name:
+                    continue
 
-                name = fn['nutrient']['name']
-                unit = fn['nutrient'].get('unitName', 'g')
+                amount = fn.get('amount')
+                if amount is None:
+                    amount = fn.get('median')
+                if amount is None:
+                    continue
+                
+                try:
+                    amount = float(amount)
+                except (ValueError, TypeError):
+                    continue
+
+                unit = nutrient_data.get('unitName', 'g')
                 if unit == 'µg': unit = 'ug'
                 if name in name_map: name = name_map[name]
 
@@ -243,7 +270,7 @@ def process_stream(file_info):
                     del batch_quantities[:] 
                     batch_seen_quants.clear()
                 
-                sys.stdout.write(f"\r   💾 Сохранено связей: {quants_processed}")
+                sys.stdout.write(f"\r   💾 Сохранено связей: {quants_processed} | Пропущено: {skipped_items}")
                 sys.stdout.flush()
 
     # --- 6. Final Flush ---
@@ -252,7 +279,7 @@ def process_stream(file_info):
             NutrientsQuantity.objects.bulk_create(batch_quantities, ignore_conflicts=True)
             quants_processed += len(batch_quantities)
     
-    print(f"\n   ✅ Готово. Всего записей: {items_processed}, связей записано: {quants_processed}")
+    print(f"\n   ✅ Готово. Записей: {items_processed}, связей: {quants_processed}, пропущено: {skipped_items}")
 
 
 if __name__ == "__main__":
