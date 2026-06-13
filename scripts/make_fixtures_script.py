@@ -43,6 +43,7 @@ good_nutrients = [
 good_nutrients_set = set(good_nutrients)
 nutrients_order = {nutr: i * 3 for i, nutr in enumerate(good_nutrients, 1)}
 
+# Карта для расчета составных нутриентов (Источник -> Цель)
 calculated = {
     'Methionine': 'Methionine + cystine',
     'Cystine': 'Methionine + cystine',
@@ -65,8 +66,8 @@ files = [
     ('FoodData_Central_foundation_food_json_2026-04-30.json', 'FoundationFoods', 'foundation2'),
 ]
 
-# Размер батча для записи в БД (меньше = меньше памяти)
-BATCH_SIZE_ITEMS = 200 
+# Размер батча для записи в БД (оптимально для 1ГБ ОЗУ)
+BATCH_SIZE_ITEMS = 2000
 
 def process_stream(file_info):
     filename, key, suffix = file_info
@@ -84,7 +85,7 @@ def process_stream(file_info):
         author_user = User.objects.create_superuser(username='FoodData', email='fooddata@example.com', password=SUPERUSER_PASSWORD)
         print("✅ Создан пользователь FoodData")
 
-    # 2. Кэши ID существующих объектов
+    # 2. Кэши ID существующих объектов (чтобы не дергать БД лишний раз)
     print("   Загрузка кэша ID из БД...")
     existing_nutr_cache = dict(NutrientsName.objects.values_list('name', 'id'))
     existing_food_cache = dict(Food.objects.values_list('description', 'id'))
@@ -93,14 +94,14 @@ def process_stream(file_info):
     items_processed = 0
     quants_processed = 0
     
-    # Буфер для пачки связей
+    # Буфер для пачки связей (NutrientsQuantity)
     batch_quantities = [] 
+    # Set для проверки уникальности внутри текущего батча
     batch_seen_quants = set() 
 
     # Открываем файл в бинарном режиме для ijson
+    # ijson парсит массив item за item-ом, не загружая файл целиком в память
     with open(filepath, 'rb') as f:
-        # ijson парсит массив item за item-ом, не загружая файл целиком
-        # f'{key}.item' означает "взять массив по ключу key и итерировать его элементы"
         items_generator = ijson.items(f, f'{key}.item')
 
         for item in items_generator:
@@ -126,14 +127,11 @@ def process_stream(file_info):
                     category = wweia.get('wweiaFoodCategoryDescription', 'None')
 
             # --- 1. Работа с Продуктом ---
-            # Проверяем, есть ли продукт в кэше
+            # Проверяем кэш
             current_food_id = existing_food_cache.get(desc)
             
-            # Если нет, проверяем, не создавали ли мы его только что в этом цикле
-            # (на случай если логика ниже сработает некорректно, но здесь мы создаем сразу)
-            
             if not current_food_id:
-                # Создаем продукт сразу, чтобы получить ID для связей
+                # Если нет в кэше, создаем
                 try:
                     f_obj = Food(
                         description=desc,
@@ -142,127 +140,100 @@ def process_stream(file_info):
                         foodCategory=category,
                         author=author_user
                     )
-                    f_obj.save() # DB Hit, но надежно
+                    f_obj.save() 
                     current_food_id = f_obj.id
                     existing_food_cache[desc] = current_food_id
                 except Exception as e:
-                    # Если ошибка (например дубликат в БД, которого нет в кэше)
+                    # Если вдруг уже есть (конкурентная запись или расхождение кэша)
                     try:
                         current_food_id = Food.objects.get(description=desc).id
                         existing_food_cache[desc] = current_food_id
                     except Exception:
-                        print(f"⚠️ Ошибка создания продукта {desc}: {e}")
                         current_food_id = None
 
             if not current_food_id:
-                continue # Пропускаем нутриенты, если нет продукта
+                continue # Пропускаем, если не удалось получить продукт
 
             # --- 2. Парсинг Нутриентов ---
             energy_added_for_this_food = False
+            nutrients_for_item = [] # Список (name, id, amount)
             
-            # Список нутриентов для текущего продукта (name, id, amount)
-            nutrients_for_item = []
-
-            # Обработка расчетных нутриентов
-            calc_totals = {}
+            # Словарь для накопления сумм расчетных нутриентов
+            calc_sums = {} 
 
             for fn in item.get('foodNutrients', []):
-                amount = fn.get('amount') or fn.get('median')
-                if amount is None: continue
+                amount = fn.get('amount')
+                if amount is None: 
+                    amount = fn.get('median')
+                if amount is None: 
+                    continue
 
                 name = fn['nutrient']['name']
                 unit = fn['nutrient'].get('unitName', 'g')
                 if unit == 'µg': unit = 'ug'
                 if name in name_map: name = name_map[name]
 
-                # Обработка энергии
+                # Обработка энергии (берем только первую попавшуюся)
                 if name == 'Energy':
                     if unit == 'kJ': amount = round(amount / 4.184, 2)
                     if energy_added_for_this_food: continue
                     energy_added_for_this_food = True
                     unit = 'kcal'
 
-                # Поиск ID нутриента
+                # Поиск или создание нутриента в БД
                 nutr_id = existing_nutr_cache.get(name)
-                
-                # Если нет - создаем
                 if not nutr_id:
                     is_pub = 1 if name in good_nutrients_set else 0
                     order = nutrients_order.get(name, 100)
                     try:
                         n_obj = NutrientsName.objects.create(
-                            name=name, 
-                            unit_name=unit, 
-                            is_published=bool(is_pub), 
-                            order=order
+                            name=name, unit_name=unit, 
+                            is_published=bool(is_pub), order=order
                         )
                         nutr_id = n_obj.id
                         existing_nutr_cache[name] = nutr_id
                     except Exception:
-                        # Если конкурентно создали или ошибка - пробуем достать
+                        # Если ошибка создания, пробуем получить
                         try:
                             nutr_id = NutrientsName.objects.get(name=name).id
                             existing_nutr_cache[name] = nutr_id
                         except Exception:
-                            continue # Пропускаем, если не получилось
+                            continue # Пропускаем, если ничего не вышло
 
                 nutrients_for_item.append((name, nutr_id, amount))
                 
-                # Логика расчетных нутриентов (суммируем в память)
+                # Логика расчетных нутриентов (накапливаем сумму)
                 if name in calculated:
                     target = calculated[name]
-                    if target not in existing_nutr_cache:
-                        # Создаем "заглушку" расчетного нутриента
-                        t_unit = unit 
-                        t_pub = 1 if target in good_nutrients_set else 0
-                        t_ord = nutrients_order.get(target, 100)
+                    if target not in calc_sums:
+                        calc_sums[target] = {'amount': 0, 'unit': unit}
+                    calc_sums[target]['amount'] += amount
+
+            # --- 3. Обработка расчетных нутриентов ---
+            for target, info in calc_sums.items():
+                t_id = existing_nutr_cache.get(target)
+                if not t_id:
+                    # Создаем новый нутриент для суммы
+                    is_pub = 1 if target in good_nutrients_set else 0
+                    order = nutrients_order.get(target, 100)
+                    try:
+                        n_obj = NutrientsName.objects.create(
+                            name=target, unit_name=info['unit'], 
+                            is_published=bool(is_pub), order=order
+                        )
+                        t_id = n_obj.id
+                        existing_nutr_cache[target] = t_id
+                    except Exception:
                         try:
-                            n_obj = NutrientsName.objects.create(name=target, unit_name=t_unit, is_published=bool(t_pub), order=t_ord)
-                            existing_nutr_cache[target] = n_obj.id
-                        except:
-                            try:
-                                existing_nutr_cache[target] = NutrientsName.objects.get(name=target).id
-                            except: pass
-                    
-                    target_id = existing_nutr_cache.get(target)
-                    if target_id:
-                        calc_totals[target] = (target, target_id, calc_totals.get(target, 0)[2] + amount if target in calc_totals else amount)
-                        # Исправление логики суммы выше: calc_totals хранит (name, id, sum_amount)
-                        # Перепишем проще:
-                        pass 
-
-            # Пересоберем calc_totals корректно
-            calc_totals = {} # Reset
-            # (Логика выше была сложной, упростим)
-            
-            # Пройдемся еще раз для расчетных (или встроим в цикл выше, но так чище)
-            # Для оптимизации лучше делать в одном цикле, но для читаемости разделим.
-            # В реальном цикле выше мы просто накапливали сырые данные.
-            
-            # Вернемся к логике sum внутри цикла:
-            # nutrients_for_item.append(...) - это добавлено
-            
-            # Расчетные:
-            # Нам нужно просуммировать Methionine и Cystine -> Methionine + cystine
-            # Это требует прохода по всем нутриентам.
-            
-            # Для упрощения и скорости на слабом сервере:
-            # Простая агрегация в dict
-            calc_map = {} # target_name -> total_amount
-            
-            # Проход по собранным нутриентам
-            for n_name, n_id, n_amt in nutrients_for_item:
-                if n_name in calculated:
-                    target = calculated[n_name]
-                    calc_map[target] = calc_map.get(target, 0) + n_amt
-            
-            # Добавляем итоговые расчетные
-            for target_name, total_amt in calc_map.items():
-                t_id = existing_nutr_cache.get(target_name)
+                            t_id = NutrientsName.objects.get(name=target).id
+                            existing_nutr_cache[target] = t_id
+                        except Exception:
+                            t_id = None
+                
                 if t_id:
-                    nutrients_for_item.append((target_name, t_id, total_amt))
+                    nutrients_for_item.append((target, t_id, info['amount']))
 
-            # --- 3. Формирование связей (Quantity) ---
+            # --- 4. Добавление в батч ---
             for n_name, n_id, amt in nutrients_for_item:
                 key = (current_food_id, n_id)
                 if key not in batch_seen_quants:
@@ -271,10 +242,8 @@ def process_stream(file_info):
                         NutrientsQuantity(food_id=current_food_id, nutrient_id=n_id, amount=amt)
                     )
             
-            # --- 4. Flush Batch (Запись в БД) ---
-            # Если буфер переполнен - пишем
-            # Размер буфера ограничен кол-вом связей. ~10 связей на еду * 200 еды = 2000 объектов
-            if len(batch_quantities) >= 2000:
+            # --- 5. Flush (Запись в БД) ---
+            if len(batch_quantities) >= BATCH_SIZE_ITEMS:
                 with transaction.atomic():
                     NutrientsQuantity.objects.bulk_create(batch_quantities, ignore_conflicts=True)
                     quants_processed += len(batch_quantities)
@@ -285,7 +254,7 @@ def process_stream(file_info):
                 sys.stdout.write(f"\r   💾 Сохранено связей: {quants_processed}")
                 sys.stdout.flush()
 
-    # --- 5. Final Flush ---
+    # --- 6. Final Flush ---
     if batch_quantities:
         with transaction.atomic():
             NutrientsQuantity.objects.bulk_create(batch_quantities, ignore_conflicts=True)
