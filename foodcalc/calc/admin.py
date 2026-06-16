@@ -1,7 +1,7 @@
 from django.contrib import admin
 from food.models import Food, NutrientsName, NutrientsQuantity, NutrientGroup
 from animal.models import Animal, AnimalType, PetStage
-from calc.models import Rations, RecommendedNutrientLevelsDM
+from calc.models import Rations, RecommendedNutrientLevelsDM, RecommendedNutrientLevels1000kcal
 
 
 @admin.register(Food)
@@ -65,6 +65,15 @@ class NutrientGroup(admin.ModelAdmin):
 class RecommendedNutrientLevelsDM(admin.ModelAdmin):
     list_display = ('pet_type', 'pet_stage', 'nutrient_amount',
                     'nutrient_name')
+    list_editable = ('nutrient_amount',)
+
+
+@admin.register(RecommendedNutrientLevels1000kcal)
+class RecommendedNutrientLevels1000kcal(admin.ModelAdmin):
+    list_display = ('pet_type', 'pet_stage', 'nutrient_amount',
+                    'nutrient_name')
+    search_fields = ('pet_stage',)
+    list_filter = ('nutrient_name', 'pet_stage',)
     list_editable = ('nutrient_amount',)
 
 
