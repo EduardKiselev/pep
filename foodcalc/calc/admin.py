@@ -65,6 +65,8 @@ class NutrientGroup(admin.ModelAdmin):
 class RecommendedNutrientLevelsDM(admin.ModelAdmin):
     list_display = ('pet_type', 'pet_stage', 'nutrient_amount',
                     'nutrient_name')
+    search_fields = ('pet_stage',)
+    list_filter = ('nutrient_name', 'pet_stage',)
     list_editable = ('nutrient_amount',)
 
 
